@@ -54,7 +54,7 @@ export default function App() {
 
   return (
       <main className="page">
-        <h1>Аудит стиля — в помощь графоманам</h1>
+        <h1>Аудит стиля (детектор графомании)</h1>
 
         <section className="inputPanel">
           <div className="toolbar">
