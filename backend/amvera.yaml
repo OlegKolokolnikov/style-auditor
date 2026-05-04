@@ -9,4 +9,3 @@ build:
 
 run:
   jarName: style-auditor-backend-1.0.0.jar
-  args: --server.port=80
