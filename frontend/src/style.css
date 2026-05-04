@@ -397,6 +397,24 @@ textarea {
   background: #211b16;
 }
 
+.meterHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: #c9bfb0;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  font-style: normal;
+  text-decoration: none;
+  cursor: help;
+  vertical-align: middle;
+}
+
 .flags {
   display: grid;
   gap: 10px;
