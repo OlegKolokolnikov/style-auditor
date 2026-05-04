@@ -57,7 +57,7 @@ public class PatternShortPhraseSeriesCheck implements TextCheck {
                     "Серии коротких фраз",
                     severity,
                     ranges.size(),
-                    "Пункты 2 и 9: несколько коротких фраз подряд или похожая монтажная серия.",
+                    "Пункт 2: несколько коротких фраз подряд или похожая монтажная серия.",
                     11
             );
 
