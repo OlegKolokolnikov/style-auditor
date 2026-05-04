@@ -26,6 +26,9 @@ export default function App() {
       }
 
       const data = await res.json();
+      if (!data || !Array.isArray(data.chunks)) {
+        throw new Error("Неожиданный ответ от сервера");
+      }
       setResult(data);
       setActiveChunk(null);
     } catch (e) {
