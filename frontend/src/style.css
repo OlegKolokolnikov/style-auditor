@@ -522,6 +522,76 @@ textarea {
   color: #374151;
 }
 
+.legend {
+  margin: 16px 0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.legend summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #374151;
+  user-select: none;
+}
+
+.legend summary:hover {
+  color: #111827;
+}
+
+.legendBody {
+  padding: 4px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.legendSection h4 {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+.legendColors {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.legendColors mark {
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.legendList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  font-size: 0.88rem;
+}
+
+.legendList dt {
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.legendList dd {
+  margin: 0;
+  color: #374151;
+}
+
 .summaryNote {
   margin-top: 8px;
   font-size: 13px;
