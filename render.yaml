@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: style-auditor-backend
+    runtime: docker
+    rootDir: backend
+    plan: free
+    envVars:
+      - key: SERVER_PORT
+        value: 8080
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  - type: web
+    name: style-auditor-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        sync: false
