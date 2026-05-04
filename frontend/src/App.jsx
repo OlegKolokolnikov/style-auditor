@@ -45,6 +45,7 @@ export default function App() {
     setActiveChunk(null);
   }
 
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const shownChunks = result
       ? activeChunk === null
           ? result.chunks
@@ -67,9 +68,12 @@ export default function App() {
               />
             </label>
 
-            <button onClick={analyze} disabled={loading || !text.trim()}>
+            <button onClick={analyze} disabled={loading || wordCount < 50}>
               {loading ? "Проверяю..." : "Проверить"}
             </button>
+            {wordCount < 50 && (
+              <span className="wordCount">{wordCount} / 50 слов</span>
+            )}
           </div>
 
           <textarea
