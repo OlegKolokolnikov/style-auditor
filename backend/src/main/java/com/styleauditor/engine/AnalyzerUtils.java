@@ -3,6 +3,8 @@ package com.styleauditor.engine;
 import com.styleauditor.model.ChunkResult;
 import com.styleauditor.model.Highlight;
 import com.styleauditor.model.ProblemStat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,6 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class AnalyzerUtils {
+    private static final Logger log = LoggerFactory.getLogger(AnalyzerUtils.class);
     private static final Pattern SENTENCE_PATTERN =
             Pattern.compile("[^.!?…]+[.!?…]+|[^.!?…]+$", Pattern.UNICODE_CHARACTER_CLASS);
 
@@ -198,6 +201,7 @@ public final class AnalyzerUtils {
 
         for (Highlight current : sorted) {
             if (current.start() < 0 || current.end() <= current.start()) {
+                log.warn("Invalid highlight skipped: type='{}' start={} end={}", current.type(), current.start(), current.end());
                 continue;
             }
 
