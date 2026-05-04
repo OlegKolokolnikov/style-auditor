@@ -18,6 +18,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class AnalyzerUtils {
+    private static final Pattern SENTENCE_PATTERN =
+            Pattern.compile("[^.!?…]+[.!?…]+|[^.!?…]+$", Pattern.UNICODE_CHARACTER_CLASS);
+
     private AnalyzerUtils() {
     }
 
@@ -59,7 +62,7 @@ public final class AnalyzerUtils {
 
     public static List<String> splitSentences(String text) {
         List<String> result = new ArrayList<>();
-        Matcher matcher = Pattern.compile("[^.!?…]+[.!?…]+|[^.!?…]+$", Pattern.UNICODE_CHARACTER_CLASS).matcher(text);
+        Matcher matcher = SENTENCE_PATTERN.matcher(text);
 
         while (matcher.find()) {
             String sentence = matcher.group().strip();
@@ -72,19 +75,21 @@ public final class AnalyzerUtils {
         return result;
     }
 
-    public static List<int[]> sentencePositions(String text, List<String> sentences) {
+    public static List<int[]> sentencePositions(String text) {
         List<int[]> positions = new ArrayList<>();
-        int searchFrom = 0;
+        Matcher matcher = SENTENCE_PATTERN.matcher(text);
 
-        for (String sentence : sentences) {
-            int start = text.indexOf(sentence, searchFrom);
-
-            if (start < 0) {
+        while (matcher.find()) {
+            if (matcher.group().strip().isBlank()) {
                 continue;
             }
 
-            int end = start + sentence.length();
-            searchFrom = end;
+            int start = matcher.start();
+            int end = matcher.end();
+
+            while (start < end && Character.isWhitespace(text.charAt(start))) start++;
+            while (end > start && Character.isWhitespace(text.charAt(end - 1))) end--;
+
             positions.add(new int[]{start, end});
         }
 

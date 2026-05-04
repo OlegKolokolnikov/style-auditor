@@ -3,6 +3,7 @@ package com.styleauditor.api;
 import com.styleauditor.engine.AnalysisService;
 import com.styleauditor.model.AnalysisResult;
 import com.styleauditor.model.AnalyzeRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,9 +21,11 @@ public class AnalyzeController {
     }
 
     @PostMapping("/analyze")
-    public AnalysisResult analyze(@RequestBody AnalyzeRequest request) {
-        String text = request == null || request.text() == null ? "" : request.text();
-        return service.analyze(text);
+    public ResponseEntity<?> analyze(@RequestBody(required = false) AnalyzeRequest request) {
+        if (request == null || request.text() == null || request.text().isBlank()) {
+            return ResponseEntity.badRequest().body("text is required");
+        }
+        return ResponseEntity.ok(service.analyze(request.text()));
     }
 }
 

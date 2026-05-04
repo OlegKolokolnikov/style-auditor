@@ -25,7 +25,7 @@ public class PatternHookParagraphCheck implements TextCheck {
         while (matcher.find()) {
             int start = matcher.start();
 
-            if (matcher.group().startsWith("\\n") || matcher.group().startsWith("\\r")) {
+            while (start < matcher.end() && !Character.isLetter(context.text().charAt(start))) {
                 start++;
             }
 

@@ -17,7 +17,7 @@ public class SmoothRhythmCheck implements TextCheck {
         double avg = context.sentenceLengths().stream().mapToInt(value -> value).average().orElse(0);
         double std = AnalyzerUtils.std(context.sentenceLengths(), avg);
 
-        if (std > 0 && std < 3.0) {
+        if (std < 3.0) {
             result.addHighlight(
                             0,
                             context.text().length(),

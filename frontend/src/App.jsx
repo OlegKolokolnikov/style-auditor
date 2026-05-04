@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Upload } from "lucide-react";
 
-const API_URL = "http://localhost:8080/api/analyze";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080/api/analyze";
 
 export default function App() {
   const [text, setText] = useState("");

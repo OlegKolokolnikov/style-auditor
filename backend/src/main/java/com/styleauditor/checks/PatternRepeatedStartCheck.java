@@ -23,7 +23,11 @@ public class PatternRepeatedStartCheck implements TextCheck {
             String first = AnalyzerUtils.firstWord(context.sentences().get(i)).toLowerCase(Locale.ROOT);
             int[] pos = context.sentencePositions().get(i);
 
-            if (!first.isBlank() && first.equals(previous)) {
+            if (first.isEmpty()) {
+                continue;
+            }
+
+            if (first.equals(previous)) {
                 highlights.add(new Highlight(
                         previousStart >= 0 ? previousStart : pos[0],
                         pos[1],

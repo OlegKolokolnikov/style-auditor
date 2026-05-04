@@ -108,7 +108,7 @@ public class AnalysisService {
 
     private ChunkResult analyzeChunk(int index, String chunkText) {
         List<String> sentences = AnalyzerUtils.splitSentences(chunkText);
-        List<int[]> positions = AnalyzerUtils.sentencePositions(chunkText, sentences);
+        List<int[]> positions = AnalyzerUtils.sentencePositions(chunkText);
         List<Integer> lengths = AnalyzerUtils.sentenceLengths(sentences);
 
         double avg = lengths.stream().mapToInt(value -> value).average().orElse(0);
@@ -167,11 +167,9 @@ public class AnalysisService {
         double coefficient = avg == 0 ? 0 : std / avg;
         double score = 100 - (coefficient * 180);
 
-        if (std < 3.0) {
-            score += 12;
-        }
-
         if (std < 2.0) {
+            score += 24;
+        } else if (std < 3.0) {
             score += 12;
         }
 
