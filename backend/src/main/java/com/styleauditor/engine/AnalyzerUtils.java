@@ -63,40 +63,27 @@ public final class AnalyzerUtils {
                 .toList();
     }
 
-    public static List<String> splitSentences(String text) {
-        List<String> result = new ArrayList<>();
-        Matcher matcher = SENTENCE_PATTERN.matcher(text);
+    public record ParsedSentences(List<String> sentences, List<int[]> positions) {}
 
-        while (matcher.find()) {
-            String sentence = matcher.group().strip();
-
-            if (!sentence.isBlank()) {
-                result.add(sentence);
-            }
-        }
-
-        return result;
-    }
-
-    public static List<int[]> sentencePositions(String text) {
+    public static ParsedSentences parseSentences(String text) {
+        List<String> sentences = new ArrayList<>();
         List<int[]> positions = new ArrayList<>();
         Matcher matcher = SENTENCE_PATTERN.matcher(text);
 
         while (matcher.find()) {
-            if (matcher.group().strip().isBlank()) {
-                continue;
-            }
+            String sentence = matcher.group().strip();
+            if (sentence.isBlank()) continue;
 
             int start = matcher.start();
             int end = matcher.end();
-
             while (start < end && Character.isWhitespace(text.charAt(start))) start++;
             while (end > start && Character.isWhitespace(text.charAt(end - 1))) end--;
 
+            sentences.add(sentence);
             positions.add(new int[]{start, end});
         }
 
-        return positions;
+        return new ParsedSentences(sentences, positions);
     }
 
     public static List<Integer> sentenceLengths(List<String> sentences) {

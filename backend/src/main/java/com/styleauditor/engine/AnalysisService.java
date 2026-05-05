@@ -107,8 +107,9 @@ public class AnalysisService {
     }
 
     private ChunkResult analyzeChunk(int index, String chunkText) {
-        List<String> sentences = AnalyzerUtils.splitSentences(chunkText);
-        List<int[]> positions = AnalyzerUtils.sentencePositions(chunkText);
+        AnalyzerUtils.ParsedSentences parsed = AnalyzerUtils.parseSentences(chunkText);
+        List<String> sentences = parsed.sentences();
+        List<int[]> positions = parsed.positions();
         List<Integer> lengths = AnalyzerUtils.sentenceLengths(sentences);
 
         double avg = lengths.stream().mapToInt(value -> value).average().orElse(0);
