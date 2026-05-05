@@ -57,20 +57,22 @@ public class PatternDashOutsideDialogueCheck implements TextCheck {
     private boolean isDialogueDash(String text, int dashIndex) {
         int i = dashIndex - 1;
 
-        while (i >= 0) {
-            char c = text.charAt(i);
-
-            if (c == '\n' || c == '\r') {
-                return true;
-            }
-
-            if (!Character.isWhitespace(c)) {
-                return false;
-            }
-
+        // skip spaces (not newlines) to find the preceding non-space character
+        while (i >= 0 && text.charAt(i) == ' ') {
             i--;
         }
 
-        return true;
+        if (i < 0) return true;
+
+        char prev = text.charAt(i);
+
+        // dash at start of line — dialogue opener
+        if (prev == '\n' || prev == '\r') return true;
+
+        // dash after closing punctuation of direct speech — attribution dash
+        // e.g. "Ты уверен? — спросил он." / "Уходи! — крикнул он." / "Хорошо. — Он кивнул."
+        if (prev == '?' || prev == '!' || prev == '.' || prev == ',' || prev == '»') return true;
+
+        return false;
     }
 }
