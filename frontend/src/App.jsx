@@ -79,6 +79,11 @@ export default function App() {
             <button onClick={analyze} disabled={loading || wordCount < 50 || charCount > MAX_CHARS}>
               {loading ? "Проверяю..." : "Проверить"}
             </button>
+            {text && (
+              <button onClick={() => { setText(""); setResult(null); setActiveChunk(null); }}>
+                Очистить
+              </button>
+            )}
             {wordCount < 50 && (
               <span className="wordCount">{wordCount} / 50 слов</span>
             )}
