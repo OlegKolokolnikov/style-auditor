@@ -77,6 +77,7 @@ export default function App() {
         loading={loading}
         error={error}
         onDismissError={() => setError(null)}
+        onError={setError}
       />
 
       <Legend />

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${app.cors.allowed-origin}")
 public class AnalyzeController {
     private final AnalysisService service;
 

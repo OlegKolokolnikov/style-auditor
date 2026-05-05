@@ -2,7 +2,7 @@ import { Upload } from "lucide-react";
 
 const MAX_CHARS = 200_000;
 
-export default function InputPanel({ text, setText, onAnalyze, onClear, loading, error, onDismissError }) {
+export default function InputPanel({ text, setText, onAnalyze, onClear, loading, error, onDismissError, onError }) {
   const charCount = text.length;
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const tooLong = charCount > MAX_CHARS;
@@ -11,6 +11,12 @@ export default function InputPanel({ text, setText, onAnalyze, onClear, loading,
   async function handleFileUpload(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+    event.target.value = "";
+    // 600KB covers 200k Russian chars even at 3 bytes/char (UTF-8)
+    if (file.size > 600_000) {
+      onError("Файл слишком большой. Максимум — 200 000 символов.");
+      return;
+    }
     const content = await file.text();
     setText(content);
   }
