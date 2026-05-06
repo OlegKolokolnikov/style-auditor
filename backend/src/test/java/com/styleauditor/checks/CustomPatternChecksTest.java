@@ -155,9 +155,17 @@ class CustomPatternChecksTest {
     // ── PatternTripleEnumerationCheck ───────────────────────────────────────
 
     @Test
-    void triple_detectedForThreeItemList() {
+    void triple_detectedForThreeItemListWithConjunction() {
         var result = run(new PatternTripleEnumerationCheck(),
                 "Страх, боль и отчаяние захлестнули его с головой.");
+        assertThat(result.flags()).isNotEmpty();
+    }
+
+    @Test
+    void triple_detectedForThreeAdjectivesWithoutConjunction() {
+        // "A, B, C существительное" — без союза
+        var result = run(new PatternTripleEnumerationCheck(),
+                "Алрина обнаружила за поворотом край пахотных, зелёных, вонючих полей.");
         assertThat(result.flags()).isNotEmpty();
     }
 

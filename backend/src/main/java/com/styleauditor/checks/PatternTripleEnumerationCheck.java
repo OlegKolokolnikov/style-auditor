@@ -11,7 +11,10 @@ import java.util.regex.Pattern;
 
 public class PatternTripleEnumerationCheck implements TextCheck {
     private static final Pattern PATTERN = Pattern.compile(
-            "\\b[\\p{L}]{3,}\\b\\s*,\\s*\\b[\\p{L}]{3,}\\b\\s+(?:и|или)\\s+\\b[\\p{L}]{3,}\\b",
+            // A, B и/или C
+            "\\b[\\p{L}]{3,}\\b\\s*,\\s*\\b[\\p{L}]{3,}\\b\\s+(?:и|или)\\s+\\b[\\p{L}]{3,}\\b" +
+            // A, B, C (без союза — прилагательные и однородные члены через запятые)
+            "|\\b[\\p{L}]{3,}\\b,\\s*\\b[\\p{L}]{3,}\\b,\\s*\\b[\\p{L}]{3,}\\b",
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.UNICODE_CHARACTER_CLASS
     );
 
