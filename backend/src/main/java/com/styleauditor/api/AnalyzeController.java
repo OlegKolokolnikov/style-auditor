@@ -4,7 +4,6 @@ import com.styleauditor.engine.AnalysisService;
 import com.styleauditor.model.AnalysisResult;
 import com.styleauditor.model.AnalyzeRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "${app.cors.allowed-origin}")
 public class AnalyzeController {
     private final AnalysisService service;
 
