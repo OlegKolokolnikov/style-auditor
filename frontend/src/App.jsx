@@ -6,7 +6,7 @@ import ChunkList from "./components/ChunkList";
 import ChunkDetail from "./components/ChunkDetail";
 import LoadingSkeleton from "./components/LoadingSkeleton";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080/api/analyze";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:80/api/analyze";
 
 export default function App() {
   const [text, setText] = useState("");
