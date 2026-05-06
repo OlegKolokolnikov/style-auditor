@@ -42,6 +42,14 @@ class SmoothChecksTest {
     }
 
     @Test
+    void rhythm_notFlaggedForDialogueHeavyChunk() {
+        // короткие диалоговые реплики не должны давать флаг монотонного ритма
+        String text = "— Да. — Нет. — Подожди. — Объясни. — Потом. — Слушай. — Хорошо.";
+        var result = run(new SmoothRhythmCheck(), text);
+        assertThat(result.flags()).isEmpty();
+    }
+
+    @Test
     void rhythm_notFlaggedForFewerThanFourSentences() {
         String text = "Он пришёл домой вечером. Она ждала его давно. Кот спал у батареи.";
         var result = run(new SmoothRhythmCheck(), text);

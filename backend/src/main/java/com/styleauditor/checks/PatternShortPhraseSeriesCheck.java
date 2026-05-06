@@ -19,8 +19,17 @@ public class PatternShortPhraseSeriesCheck implements TextCheck {
         int runCount = 0;
 
         for (int i = 0; i < context.sentences().size() && i < context.sentencePositions().size(); i++) {
+            String sentence = context.sentences().get(i);
             int[] pos = context.sentencePositions().get(i);
-            int length = AnalyzerUtils.wordCount(context.sentences().get(i));
+
+            // диалоговые реплики сбрасывают серию — их краткость объясняется жанром, не AI
+            if (sentence.startsWith("—")) {
+                runStart = -1;
+                runCount = 0;
+                continue;
+            }
+
+            int length = AnalyzerUtils.wordCount(sentence);
 
             if (length > 0 && length <= 4) {
                 if (runCount == 0) {

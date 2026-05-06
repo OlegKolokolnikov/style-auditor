@@ -153,6 +153,14 @@ class CustomPatternChecksTest {
     }
 
     @Test
+    void shortSeries_notDetectedForDialogueReplies() {
+        // диалоговые реплики не образуют «серию коротких фраз»
+        var result = run(new PatternShortPhraseSeriesCheck(),
+                "— Да. — Нет. — Подожди. — Послушай.");
+        assertThat(result.flags()).isEmpty();
+    }
+
+    @Test
     void shortSeries_notDetectedForLongSentences() {
         var result = run(new PatternShortPhraseSeriesCheck(),
                 "Дима нашёл ключ под ковриком. Замок заскрипел и поддался. Он вошёл в тёмную комнату.");
