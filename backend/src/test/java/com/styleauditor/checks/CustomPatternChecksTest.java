@@ -224,6 +224,15 @@ class CustomPatternChecksTest {
     }
 
     @Test
+    void twoAdjectives_notDetectedWhenFirstWordAfterPreposition() {
+        // "стеной" — существительное в творительном падеже после предлога "за",
+        // не прилагательное, несмотря на совпадение окончания
+        var result = run(new PatternTwoAdjectivesCheck(),
+                "как сосед за стеной, повторяющий одну и ту же мелодию.");
+        assertThat(result.flags()).isEmpty();
+    }
+
+    @Test
     void twoAdjectives_severityHighForThreePlusOccurrences() {
         var result = run(new PatternTwoAdjectivesCheck(),
                 "Тёмный, холодный вечер пришёл. Пустой, гулкий зал встретил его. " +
