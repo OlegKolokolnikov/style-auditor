@@ -14,7 +14,7 @@ import java.util.Set;
 public class PatternEmotionLabelCheck implements TextCheck {
     private static final Set<String> EMOTIONS = Set.of(
             "боль", "гнев", "отчаяние", "страх", "ужас",
-            "пустота", "тоска", "ярость", "надежда", "покой"
+            "пустота", "тоска", "ярость", "надежда", "покой", "тревога"
     );
 
     @Override

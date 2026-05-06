@@ -50,6 +50,13 @@ class CustomPatternChecksTest {
     }
 
     @Test
+    void emotionLabel_detectedForTrevoga() {
+        var result = run(new PatternEmotionLabelCheck(),
+                "Дима остановился. Тревога. Он не мог объяснить, что происходит.");
+        assertThat(result.flags()).isNotEmpty();
+    }
+
+    @Test
     void emotionLabel_notDetectedInLongerSentence() {
         var result = run(new PatternEmotionLabelCheck(),
                 "Боль была невыносимой и пронизывала его насквозь.");
@@ -181,6 +188,14 @@ class CustomPatternChecksTest {
         // "тянет, но и не" — "но" союз, "не" частица, не список
         var result = run(new PatternTripleEnumerationCheck(),
                 "Забор какой-то странный: на крепостную стену не тянет, но и не деревенский частокол.");
+        assertThat(result.flags()).isEmpty();
+    }
+
+    @Test
+    void triple_notDetectedForVerbSeries() {
+        // глагольный ряд без союза — не должен детектиться как тройное перечисление
+        var result = run(new PatternTripleEnumerationCheck(),
+                "Он пришёл, сел, замолчал.");
         assertThat(result.flags()).isEmpty();
     }
 

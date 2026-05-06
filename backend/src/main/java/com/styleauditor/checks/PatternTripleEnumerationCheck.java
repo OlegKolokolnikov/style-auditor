@@ -10,11 +10,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class PatternTripleEnumerationCheck implements TextCheck {
+    private static final String ADJ = "[а-яё]+(?:ый|ий|ой|ая|яя|ое|ее|ые|ие|ого|его|ым|им|ую|юю|ою|ыми|ими|ых|их)";
     private static final Pattern PATTERN = Pattern.compile(
-            // A, B и/или C
+            // A, B и/или C — любые слова от 3 символов
             "\\b[\\p{L}]{3,}\\b\\s*,\\s*\\b[\\p{L}]{3,}\\b\\s+(?:и|или)\\s+\\b[\\p{L}]{3,}\\b" +
-            // A, B, C (без союза — прилагательные и однородные члены через запятые)
-            "|\\b[\\p{L}]{3,}\\b,\\s*\\b[\\p{L}]{3,}\\b,\\s*\\b[\\p{L}]{3,}\\b",
+            // A, B, C — только прилагательные (по окончаниям), чтобы не ловить глагольные ряды
+            "|\\b" + ADJ + "\\b,\\s*\\b" + ADJ + "\\b,\\s*\\b" + ADJ + "\\b",
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.UNICODE_CHARACTER_CLASS
     );
 

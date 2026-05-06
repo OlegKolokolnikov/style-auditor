@@ -73,8 +73,16 @@ class RegexPatternChecksTest {
     @Test
     void hyperbole_detectedWhenPresent() {
         var result = run(new PatternHyperboleCheck(),
-                "Оглушающий грохот разнёсся по всей улице. Невыносимый холод пробрал до костей.");
+                "Оглушающий грохот разнёсся по всей улице. Это был судьбоносный момент.");
         assertThat(result.flags()).isNotEmpty();
+    }
+
+    @Test
+    void hyperbole_commonWordsNotFlagged() {
+        // невыносимый, бесконечный, невероятный — слишком частотны, убраны из списка
+        var result = run(new PatternHyperboleCheck(),
+                "Это был невыносимый день. Бесконечно долгий. Невероятно тяжёлый.");
+        assertThat(result.flags()).isEmpty();
     }
 
     @Test
@@ -151,10 +159,25 @@ class RegexPatternChecksTest {
     // ── PatternSmellCheckboxCheck ───────────────────────────────────────────
 
     @Test
-    void smell_detectedWhenPresent() {
+    void smell_detectedForSpecificSmell() {
         var result = run(new PatternSmellCheckboxCheck(),
-                "В комнате пахло старыми книгами и пылью.");
+                "Из подвала потянуло сыростью и плесенью.");
         assertThat(result.flags()).isNotEmpty();
+    }
+
+    @Test
+    void smell_detectedForVonjalo() {
+        var result = run(new PatternSmellCheckboxCheck(),
+                "В углу воняло дымом и старым мусором.");
+        assertThat(result.flags()).isNotEmpty();
+    }
+
+    @Test
+    void smell_pakhloNoLongerFlagged() {
+        // пахло убрано — слишком частотно в нормальной прозе
+        var result = run(new PatternSmellCheckboxCheck(),
+                "В комнате пахло кофе. Запах свежего хлеба напомнил о детстве.");
+        assertThat(result.flags()).isEmpty();
     }
 
     @Test
