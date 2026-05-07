@@ -436,7 +436,7 @@ function checkDash(ctx) {
   return {
     highlights: ranges.map(i=>({start:i,end:i+1,type:'Интонационное тире',sev})),
     flags:[{type:'Интонационные тире',sev,count:ranges.length,comment:'Пункт 12: частые тире в авторской речи.'}],
-    score:ranges.length*6, suggestions:['Проверьте тире в авторской речи: часть можно заменить запятой.'], metrics:{}
+    score:ranges.length*12, suggestions:['Проверьте тире в авторской речи: часть можно заменить запятой.'], metrics:{}
   };
 }
 
