@@ -268,10 +268,10 @@ function mergeHL(hl) {
 // null = нет совпадений
 // ══════════════════════════════════════════════════════════════════════════════
 
-function regexCheck(text, re, type, sev, comment, weight) {
+function regexCheck(text, re, type, sev, comment, weight, sugg=[]) {
   const hl = reFind(text, re, type, sev);
   if (!hl.length) return null;
-  return { highlights:hl, flags:[{type,sev,count:hl.length,comment}], score:hl.length*weight, suggestions:[], metrics:{} };
+  return { highlights:hl, flags:[{type,sev,count:hl.length,comment}], score:hl.length*weight, suggestions:sugg, metrics:{} };
 }
 
 // П1 — «Это не… Это…» (без пересечения предложений)
@@ -301,7 +301,7 @@ function checkShortSeries(ctx) {
   return {
     highlights: ranges.map(([s,e])=>({start:s,end:e,type:'Серия коротких фраз',sev})),
     flags:[{type:'Серии коротких фраз',sev,count:ranges.length,comment:'Пункт 2: несколько коротких фраз подряд.'}],
-    score:ranges.length*11, suggestions:['Разбавьте серию коротких фраз одним более длинным предложением.'], metrics:{}
+    score:ranges.length*11, suggestions:['Разбавьте серию коротких фраз одним более длинным предложением или бытовой деталью.'], metrics:{}
   };
 }
 
@@ -315,7 +315,8 @@ const RE_TRIPLE = new RegExp(
   'giu');
 function checkTriple(ctx) {
   return regexCheck(ctx.text, RE_TRIPLE, 'Тройное перечисление', 'medium',
-    'Пункт 3: перечисления из трёх элементов.', 7);
+    'Пункт 3: перечисления из трёх элементов.', 7,
+    ['Проверьте, не слишком ли часто в тексте идут ровные тройки.']);
 }
 
 // П4 — псевдоафоризм
@@ -336,7 +337,7 @@ function checkEmotionLabel(ctx) {
   }
   if (!hl.length) return null;
   return { highlights:hl, flags:[{type:'Эмоции-ярлыки через точку',sev:'high',count:hl.length,comment:'Пункт 5: абстрактные эмоции отдельными предложениями.'}],
-    score:hl.length*12, suggestions:['Часть эмоций-ярлыков можно заменить жестом или предметной деталью.'], metrics:{} };
+    score:hl.length*12, suggestions:['Часть эмоций-ярлыков можно заменить жестом, действием или предметной деталью.'], metrics:{} };
 }
 
 // П6 — «не потому что… а потому что…»
@@ -436,7 +437,7 @@ function checkDash(ctx) {
   return {
     highlights: ranges.map(i=>({start:i,end:i+1,type:'Интонационное тире',sev})),
     flags:[{type:'Интонационные тире',sev,count:ranges.length,comment:'Пункт 12: частые тире в авторской речи.'}],
-    score:ranges.length*12, suggestions:['Проверьте тире в авторской речи: часть можно заменить запятой.'], metrics:{}
+    score:ranges.length*12, suggestions:['Проверьте тире в авторской речи: часть можно заменить запятой, точкой или убрать.'], metrics:{}
   };
 }
 
@@ -558,7 +559,7 @@ function checkLexical(ctx) {
     const sev = value>=58?'high':'medium';
     res.flags=[{type:'Высокая предсказуемость лексики',sev,count:1,comment:'В чанке много частотных, абстрактных или универсальных слов.'}];
     res.score=Math.max(0,(value-45)*0.35);
-    res.suggestions=['Проверьте, можно ли заменить часть общих слов точными деталями: предмет, жест, звук.'];
+    res.suggestions=['Проверьте, можно ли заменить часть общих слов точными наблюдаемыми деталями: предмет, жест, звук, локальная особенность, конкретное действие.'];
   }
   return res;
 }
