@@ -307,9 +307,11 @@ function checkShortSeries(ctx) {
 
 // П3 — тройное перечисление
 const ADJ_END = '(?:ый|ий|ой|ая|яя|ое|ее|ые|ие|ого|его|ым|им|ую|юю|ою|ыми|ими|ых|их)';
+// (?![а-яёА-ЯЁ]) вместо \b — кириллица не входит в \w, поэтому \b не работает в JS
+const ADJ_PAT = '[а-яё]+'+ADJ_END+'(?![а-яёА-ЯЁ])';
 const RE_TRIPLE = new RegExp(
   B+'[\\p{L}]{3,}'+E+'\\s*,\\s*'+B+'[\\p{L}]{3,}'+E+'\\s+(?:и|или)\\s+'+B+'[\\p{L}]{3,}'+E+
-  '|[а-яё]+'+ADJ_END+'\\b\\s*,\\s*[а-яё]+'+ADJ_END+'\\b\\s*,\\s*[а-яё]+'+ADJ_END+'\\b',
+  '|'+ADJ_PAT+',\\s*'+ADJ_PAT+',\\s*'+ADJ_PAT,
   'giu');
 function checkTriple(ctx) {
   return regexCheck(ctx.text, RE_TRIPLE, 'Тройное перечисление', 'medium',
@@ -385,7 +387,7 @@ function checkRepeatedStart(ctx) {
 }
 
 // П11 — два прилагательных (кастом с проверкой предлога)
-const RE_TWO_ADJ = new RegExp('[а-яё]+'+ADJ_END+'\\b\\s*,\\s*[а-яё]+'+ADJ_END+'\\b\\s+[а-яё]{3,}\\b', 'giu');
+const RE_TWO_ADJ = new RegExp(ADJ_PAT+'\\s*,\\s*'+ADJ_PAT+'\\s+[а-яё]{3,}(?![а-яёА-ЯЁ])', 'giu');
 const PREPS = new Set(['в','во','за','на','по','к','от','до','из','со','при','без','под','над','про','для','у','с','о','об','обо','перед','между','через','около','после','вместо','кроме']);
 function checkTwoAdj(ctx) {
   const hl = [];
@@ -495,26 +497,21 @@ function checkMoreThan(ctx) {
     'Пункт 20: шаблон «нечто большее, чем…».', 15);
 }
 
-// S1 — монотонный ритм (кастом, без диалога)
+// S1 — монотонный ритм: флаг только, без метрики (метрика считается в analyzeChunk по всем предложениям)
 function checkRhythm(ctx) {
   const nonDial = ctx.sentences
     .map((s,i)=>!s.startsWith('—')?ctx.sentenceLengths[i]:null)
     .filter(v=>v!==null);
   if (nonDial.length<4) return null;
-  const avg = nonDial.reduce((a,b)=>a+b,0)/nonDial.length;
-  const sd = stdDev(nonDial);
-  const coeff = avg===0?0:sd/avg;
-  let score = 100-(coeff*180);
-  if (sd<2.0) score+=24; else if (sd<3.0) score+=12;
-  const metric = clamp(Math.round(score),0,100);
-  const res = { highlights:[], flags:[], suggestions:[], score:0, metrics:{rhythmMonotony:metric} };
-  if (sd<3.0) {
-    res.highlights=[{start:0,end:ctx.text.length,type:'Одинаковая длина фраз',sev:'medium'}];
-    res.flags=[{type:'Монотонный ритм предложений',sev:'medium',count:1,comment:'Предложения в чанке близки по длине.'}];
-    res.suggestions=['Сломайте ритм: объедините пару соседних предложений или оставьте одно очень короткое.'];
-    res.score=12;
-  }
-  return res;
+  const avg2 = nonDial.reduce((a,b)=>a+b,0)/nonDial.length;
+  const sd2 = stdDev(nonDial);
+  if (sd2>=3.0) return null;
+  return {
+    highlights:[{start:0,end:ctx.text.length,type:'Одинаковая длина фраз',sev:'medium'}],
+    flags:[{type:'Монотонный ритм предложений',sev:'medium',count:1,comment:'Предложения в чанке близки по длине.'}],
+    score:12, suggestions:['Сломайте ритм: объедините пару соседних предложений или оставьте одно очень короткое.'],
+    metrics:{}
+  };
 }
 
 // S2 — общая оценочная лексика (кастом)
@@ -579,7 +576,7 @@ function analyzeChunk(index, text) {
   const sd = stdDev(sentenceLengths);
   const ctx = { text, sentences, positions, sentenceLengths };
 
-  let allFlags=[], allHL=[], allSugg=[], score=0, lexical=0, rhythmMonotony=0;
+  let allFlags=[], allHL=[], allSugg=[], score=0, lexical=0;
 
   for (const check of CHECKS) {
     const r = check(ctx);
@@ -589,11 +586,11 @@ function analyzeChunk(index, text) {
     allSugg.push(...(r.suggestions||[]));
     score += r.score;
     if (r.metrics?.lexicalPredictability) lexical = Math.max(lexical, r.metrics.lexicalPredictability);
-    if (r.metrics?.rhythmMonotony) rhythmMonotony = r.metrics.rhythmMonotony;
   }
 
-  // rhythmMonotony из отдельной формулы если не выставлен check'ом
-  if (!rhythmMonotony && sentenceLengths.length>=3) {
+  // ритм-метрика считается по всем предложениям (как в Java AnalysisService.rhythmMonotony())
+  let rhythmMonotony = 0;
+  if (sentenceLengths.length>=3) {
     const coeff = avg===0?0:sd/avg;
     let rs = 100-(coeff*180);
     if (sd<2.0) rs+=24; else if (sd<3.0) rs+=12;
