@@ -49,7 +49,7 @@ textarea{width:100%;min-height:260px;resize:vertical;padding:18px;border:1px sol
 .layout{display:grid;grid-template-columns:260px 1fr;gap:18px;margin-top:18px;align-items:start}
 .chunkList{padding:14px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
 .chunkList h2{margin:0 0 12px}
-.chunkButton{width:100%;margin-bottom:8px;justify-content:space-between;background:#fff;color:#211b16;border:1px solid #e4d7c4;display:flex;flex-direction:column;align-items:flex-start;padding:10px 12px;border-radius:14px;cursor:pointer;text-align:left}
+.chunkButton{width:100%;margin-bottom:8px;background:#fff;color:#211b16;border:1px solid #e4d7c4;display:flex;flex-direction:column;align-items:flex-start;padding:10px 12px;border-radius:14px;cursor:pointer;text-align:left;font-size:.9rem}
 .chunkButton.active{outline:3px solid #2b2117}
 .chunkButton.high{border-color:#e66a6a}
 .chunkButton.medium{border-color:#d8a623}
@@ -68,7 +68,7 @@ textarea{width:100%;min-height:260px;resize:vertical;padding:18px;border:1px sol
 .meter{background:#fff;border:1px solid #eadfcd;border-radius:16px;padding:12px}
 .meterTop{display:flex;justify-content:space-between;gap:12px;font-size:.9rem}
 .meterBar{height:8px;background:#eee4d5;border-radius:999px;overflow:hidden;margin-top:10px}
-.meterBar div{height:100%;background:#211b16;transition:width .3s}
+.meterBar div{height:100%;background:#211b16}
 .meterHint{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;margin-left:5px;border-radius:50%;background:#c9bfb0;color:#fff;font-size:9px;font-weight:700;font-style:normal;text-decoration:none;cursor:help;vertical-align:middle}
 .flags{display:grid;gap:10px;margin:14px 0}
 .flag{border-radius:16px;padding:12px;border:1px solid}
@@ -102,19 +102,14 @@ textarea{width:100%;min-height:260px;resize:vertical;padding:18px;border:1px sol
 </head>
 <body>
 <main class="page">
-
 <h1>
   <img src="/logo.png" alt="" class="siteLogo" onerror="this.style.display='none'">
   Аудит стиля (детектор графомании)
 </h1>
-
 <section class="inputPanel">
   <div class="toolbar">
-    <label class="fileButton">
-      ↑ Загрузить .txt
-      <input type="file" id="fileInput" accept=".txt,text/plain">
-    </label>
-    <button id="analyzeBtn" onclick="analyze()">Проверить</button>
+    <label class="fileButton">↑ Загрузить .txt<input type="file" id="fileInput" accept=".txt,text/plain"></label>
+    <button id="analyzeBtn" onclick="runAnalyze()">Проверить</button>
     <button id="clearBtn" onclick="clearAll()" style="display:none">Очистить</button>
     <span id="counterEl" class="wordCount" style="display:none"></span>
   </div>
@@ -124,18 +119,17 @@ textarea{width:100%;min-height:260px;resize:vertical;padding:18px;border:1px sol
   </div>
   <textarea id="textInput" placeholder="Вставьте текст или загрузите .txt..." oninput="onInput()"></textarea>
 </section>
-
 <details class="legendSpoiler">
   <summary>Легенда</summary>
   <div class="legendBody">
     <section class="legendSection">
       <h4>Индекс чанка</h4>
-      <p class="legendText">Число от 0 до 100. Складывается из штрафных баллов за каждый найденный паттерн — чем серьёзнее паттерн, тем больше очков он даёт (от 5 до 15). Метрики сглаженности (ритм, лексика) добавляют баллы сверху. Несколько паттернов на одном участке перекрываются и окрашиваются красным — это тоже усиливает счёт. Итоговый балл не суммируется по чанкам: каждый оценивается независимо.</p>
+      <p class="legendText">Число от 0 до 100. Складывается из штрафных баллов за каждый найденный паттерн. Метрики сглаженности (ритм, лексика) добавляют баллы сверху. Итоговый балл не суммируется по чанкам: каждый оценивается независимо.</p>
     </section>
     <section class="legendSection">
       <h4>Цвета подсветки</h4>
       <ul class="legendColors">
-        <li><mark class="highlight low">низкий</mark> — слабый сигнал, одиночный случай не критичен</li>
+        <li><mark class="highlight low">низкий</mark> — слабый сигнал</li>
         <li><mark class="highlight medium">средний</mark> — стоит обратить внимание при накоплении</li>
         <li><mark class="highlight high">высокий</mark> — характерный паттерн, рекомендуется правка</li>
       </ul>
@@ -143,65 +137,541 @@ textarea{width:100%;min-height:260px;resize:vertical;padding:18px;border:1px sol
     <section class="legendSection">
       <h4>Паттерны</h4>
       <dl class="legendList">
-        <dt>Пункт 1</dt><dd>«Это не… Это…» — драматический контраст. Одиночный случай не страшен, опасно накопление.</dd>
-        <dt>Пункт 2</dt><dd>Серия коротких фраз подряд — три и более предложения длиной до 4 слов.</dd>
-        <dt>Пункт 3</dt><dd>Тройное перечисление. Нормальный приём, но при избытке заметен.</dd>
-        <dt>Пункт 4</dt><dd>Псевдоафоризм — обобщающая фраза в конце абзаца.</dd>
-        <dt>Пункт 5</dt><dd>Эмоция-ярлык — абстрактное чувство в коротком отдельном предложении.</dd>
-        <dt>Пункт 6</dt><dd>«Не потому что… а потому что…» — объяснительная связка. Шаблонна при повторе.</dd>
-        <dt>Пункт 7</dt><dd>Зеркальное предложение — соседние фразы с перестановкой похожих слов.</dd>
-        <dt>Пункт 8</dt><dd>«Как будто / словно» — сравнения. В хорроре норма, но частый повтор заметен.</dd>
-        <dt>Пункт 9</dt><dd>Повтор начала предложений — соседние предложения начинаются с одного слова.</dd>
-        <dt>Пункт 11</dt><dd>Два прилагательных перед существительным через запятую.</dd>
-        <dt>Пункт 12</dt><dd>Тире вне диалога — частые тире в авторской речи. Диалоговые тире игнорируются.</dd>
-        <dt>Пункт 14</dt><dd>Гипербола — громкое усиление. Само по себе нормально, при избытке создаёт пафос.</dd>
-        <dt>Пункт 15</dt><dd>«Не просто… а…» — усилительная конструкция. Шаблонна при накоплении.</dd>
-        <dt>Пункт 16</dt><dd>Абзац-крючок — абзац начинается одиночным словом.</dd>
-        <dt>Пункт 17</dt><dd>Жирный текст внутри художественного фрагмента.</dd>
-        <dt>Пункт 18</dt><dd>Запах — сенсорное описание через обоняние. Проблемно, если встречается в каждой сцене.</dd>
-        <dt>Пункт 19</dt><dd>Помпезное сравнение — тёмная образность. Работает дозированно.</dd>
-        <dt>Пункт 20</dt><dd>«Нечто большее, чем…» — шаблонный оборот.</dd>
-      </dl>
-    </section>
-    <section class="legendSection">
-      <h4>Метрики сглаженности</h4>
-      <dl class="legendList">
-        <dt>S1 — Монотонный ритм</dt><dd>Предложения в чанке близки по длине — стандартное отклонение длин меньше 3 слов. ИИ генерирует предложения ровными «волнами», живой автор чередует короткие и длинные. Подсвечивается весь фрагмент целиком.</dd>
-        <dt>S2 — Общая оценочная лексика</dt><dd>Много размытых прилагательных (красивый, странный, тёмный и т.п.).</dd>
-        <dt>S3 — Предсказуемость лексики</dt><dd>Высокая доля частотных, абстрактных или взаимозаменяемых слов. Человек пишет «продавленный диван с торчащей пружиной» — ИИ пишет «неудобное место».</dd>
+        <dt>П1</dt><dd>«Это не… Это…» — драматический контраст.</dd>
+        <dt>П2</dt><dd>Серия коротких фраз подряд (≥3 предложений до 4 слов).</dd>
+        <dt>П3</dt><dd>Тройное перечисление.</dd>
+        <dt>П4</dt><dd>Псевдоафоризм — обобщающая фраза.</dd>
+        <dt>П5</dt><dd>Эмоция-ярлык — абстрактное чувство отдельным предложением.</dd>
+        <dt>П6</dt><dd>«Не потому что… а потому что…»</dd>
+        <dt>П7</dt><dd>Зеркальное предложение — соседние фразы с похожими словами.</dd>
+        <dt>П8</dt><dd>«Как будто / словно»</dd>
+        <dt>П9</dt><dd>Повтор начала соседних предложений.</dd>
+        <dt>П11</dt><dd>Два прилагательных перед существительным через запятую.</dd>
+        <dt>П12</dt><dd>Тире вне диалога — частые тире в авторской речи.</dd>
+        <dt>П14</dt><dd>Гиперболическое усиление.</dd>
+        <dt>П15</dt><dd>«Не просто… а…»</dd>
+        <dt>П16</dt><dd>Абзац-крючок — одиночное слово в начале абзаца.</dd>
+        <dt>П17</dt><dd>Жирный текст внутри художественного фрагмента.</dd>
+        <dt>П18</dt><dd>Сенсорный чекбокс: запах.</dd>
+        <dt>П19</dt><dd>Пафосное сравнение.</dd>
+        <dt>П20</dt><dd>«Нечто большее, чем…»</dd>
+        <dt>S1</dt><dd>Монотонный ритм предложений.</dd>
+        <dt>S2</dt><dd>Общая оценочная лексика.</dd>
+        <dt>S3</dt><dd>Предсказуемость лексики.</dd>
       </dl>
     </section>
   </div>
 </details>
-
 <div id="dynamicArea"></div>
-
-<footer class="siteFooter">Сайт не несёт ответственности ни за что.</footer>
+<footer class="siteFooter">Работает полностью в браузере — сервер не нужен.</footer>
 </main>
-
 <script>
-const API_URL = 'http://localhost:80/api/analyze';
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// КОНФИГ
+// ══════════════════════════════════════════════════════════════════════════════
 const MAX_CHARS = 200_000;
 const MIN_WORDS = 50;
+const CHUNK_TARGET = 1100;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ТЕКСТОВЫЕ УТИЛИТЫ
+// ══════════════════════════════════════════════════════════════════════════════
+
+function splitChunks(text) {
+  const clean = (text||'').trim();
+  if (!clean) return [''];
+  const chunks = []; let cur = 0;
+  while (cur < clean.length) {
+    let end = Math.min(clean.length, cur + CHUNK_TARGET);
+    if (end < clean.length) {
+      const pb = clean.lastIndexOf('\n\n', end);
+      const sb = Math.max(clean.lastIndexOf('. ', end), Math.max(clean.lastIndexOf('! ', end), clean.lastIndexOf('? ', end)));
+      if (pb > cur + CHUNK_TARGET / 2) end = pb + 2;
+      else if (sb > cur + CHUNK_TARGET / 2) end = sb + 2;
+    }
+    const chunk = clean.substring(cur, end).trim();
+    if (chunk) chunks.push(chunk);
+    cur = end;
+  }
+  return chunks;
+}
+
+const SENT_RE = /[^.!?…]+[.!?…]+|[^.!?…]+$/gu;
+
+function parseSentences(text) {
+  const sentences = [], positions = [];
+  for (const m of text.matchAll(SENT_RE)) {
+    const s = m[0].trim();
+    if (!s) continue;
+    let start = m.index, end = m.index + m[0].length;
+    while (start < end && /\s/.test(text[start])) start++;
+    while (end > start && /\s/.test(text[end-1])) end--;
+    sentences.push(s);
+    positions.push([start, end]);
+  }
+  return { sentences, positions };
+}
+
+function wc(text) { return [...text.matchAll(/[\p{L}\p{N}]+/gu)].length; }
+
+function firstWord(text) { const m = text.match(/[\p{L}\p{N}]+/u); return m ? m[0] : ''; }
+
+const STOP4 = new Set(['него','неё','него','себя','свой','своя','своё','чтобы','когда','потом','сначала','везде','всегда']);
+function sigWords(text) {
+  const r = new Set();
+  for (const m of text.toLowerCase().matchAll(/[\p{L}]{4,}/gu))
+    if (!STOP4.has(m[0])) r.add(m[0]);
+  return r;
+}
+
+function stdDev(vals) {
+  if (!vals.length) return 0;
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+  return Math.sqrt(vals.reduce((s,v)=>s+Math.pow(v-avg,2),0)/vals.length);
+}
+
+function clamp(v,mn,mx) { return Math.max(mn,Math.min(mx,v)); }
+
+function labelFor(score) {
+  return score>=60?'высокий риск сглаженности':score>=35?'умеренный риск':'низкий риск';
+}
+
+// Граница слова для кириллицы (вместо \b)
+const B = '(?<![а-яёА-ЯЁa-zA-Z])';
+const E = '(?![а-яёА-ЯЁa-zA-Z])';
+
+function reFind(text, re, type, sev) {
+  const r = [];
+  for (const m of text.matchAll(re))
+    r.push({ start:m.index, end:m.index+m[0].length, type, sev });
+  return r;
+}
+
+function mergeHL(hl) {
+  if (!hl.length) return [];
+  const sorted = [...hl].filter(h=>h.start>=0&&h.end>h.start).sort((a,b)=>a.start-b.start||a.end-b.end);
+  const r = [];
+  for (const cur of sorted) {
+    if (!r.length) { r.push({...cur}); continue; }
+    const last = r[r.length-1];
+    if (cur.start < last.end)
+      r[r.length-1] = { start:last.start, end:Math.max(last.end,cur.end), type:last.type+' / '+cur.type, sev:'high' };
+    else r.push({...cur});
+  }
+  return r;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ЧЕКИ — каждый возвращает {flags[], highlights[], suggestions[], score, metrics{}}
+// null = нет совпадений
+// ══════════════════════════════════════════════════════════════════════════════
+
+function regexCheck(text, re, type, sev, comment, weight) {
+  const hl = reFind(text, re, type, sev);
+  if (!hl.length) return null;
+  return { highlights:hl, flags:[{type,sev,count:hl.length,comment}], score:hl.length*weight, suggestions:[], metrics:{} };
+}
+
+// П1 — «Это не… Это…» (без пересечения предложений)
+const RE_CONTRAST = new RegExp(B+'это\\s+не'+E+'[^.!?…]{0,120}?'+B+'это'+E, 'gisu');
+function checkContrast(ctx) {
+  return regexCheck(ctx.text, RE_CONTRAST, 'Это не… Это…', 'high',
+    'Пункт 1: драматический контраст.', 14);
+}
+
+// П2 — серия коротких фраз (кастом, без диалога)
+function checkShortSeries(ctx) {
+  const { sentences, positions } = ctx;
+  const ranges = []; let runStart=-1, runCount=0;
+  for (let i=0; i<sentences.length && i<positions.length; i++) {
+    const s = sentences[i];
+    if (s.startsWith('—')) { runStart=-1; runCount=0; continue; }
+    const len = wc(s);
+    if (len>0 && len<=4) {
+      if (runCount===0) runStart=positions[i][0];
+      runCount++;
+      if (runCount===3) ranges.push([runStart, positions[i][1]]);
+      else if (runCount>3 && ranges.length) { const last=ranges[ranges.length-1]; ranges[ranges.length-1]=[last[0],positions[i][1]]; }
+    } else { runStart=-1; runCount=0; }
+  }
+  if (!ranges.length) return null;
+  const sev = ranges.length>=2?'high':'medium';
+  return {
+    highlights: ranges.map(([s,e])=>({start:s,end:e,type:'Серия коротких фраз',sev})),
+    flags:[{type:'Серии коротких фраз',sev,count:ranges.length,comment:'Пункт 2: несколько коротких фраз подряд.'}],
+    score:ranges.length*11, suggestions:['Разбавьте серию коротких фраз одним более длинным предложением.'], metrics:{}
+  };
+}
+
+// П3 — тройное перечисление
+const ADJ_END = '(?:ый|ий|ой|ая|яя|ое|ее|ые|ие|ого|его|ым|им|ую|юю|ою|ыми|ими|ых|их)';
+const RE_TRIPLE = new RegExp(
+  B+'[\\p{L}]{3,}'+E+'\\s*,\\s*'+B+'[\\p{L}]{3,}'+E+'\\s+(?:и|или)\\s+'+B+'[\\p{L}]{3,}'+E+
+  '|[а-яё]+'+ADJ_END+'\\b\\s*,\\s*[а-яё]+'+ADJ_END+'\\b\\s*,\\s*[а-яё]+'+ADJ_END+'\\b',
+  'giu');
+function checkTriple(ctx) {
+  return regexCheck(ctx.text, RE_TRIPLE, 'Тройное перечисление', 'medium',
+    'Пункт 3: перечисления из трёх элементов.', 7);
+}
+
+// П4 — псевдоафоризм
+const RE_APHOR = new RegExp(B+'(тишина\\s+бывает\\s+громче|чтобы\\s+выжить|назад\\s+пути\\s+нет|это\\s+был\\s+не\\s+конец|всё\\s+только\\s+началось|мир\\s+уже\\s+не\\s+будет\\s+прежним)'+E, 'gisu');
+function checkAphorism(ctx) {
+  return regexCheck(ctx.text, RE_APHOR, 'Псевдо-афоризмы', 'medium',
+    'Пункт 4: похоже на афористичную обобщающую фразу.', 9);
+}
+
+// П5 — эмоция-ярлык (кастом)
+const EMOTIONS = new Set(['боль','гнев','отчаяние','страх','ужас','пустота','тоска','ярость','надежда','покой','тревога']);
+function checkEmotionLabel(ctx) {
+  const { sentences, positions } = ctx;
+  const hl = [];
+  for (let i=0; i<sentences.length && i<positions.length; i++) {
+    const norm = sentences[i].toLowerCase().replace(/[^\p{L}]/gu,'').trim();
+    if (EMOTIONS.has(norm)) hl.push({start:positions[i][0],end:positions[i][1],type:'Эмоция-ярлык',sev:'high'});
+  }
+  if (!hl.length) return null;
+  return { highlights:hl, flags:[{type:'Эмоции-ярлыки через точку',sev:'high',count:hl.length,comment:'Пункт 5: абстрактные эмоции отдельными предложениями.'}],
+    score:hl.length*12, suggestions:['Часть эмоций-ярлыков можно заменить жестом или предметной деталью.'], metrics:{} };
+}
+
+// П6 — «не потому что… а потому что…»
+const RE_BECAUSE = new RegExp(B+'не\\s+потому\\s+что'+E+'.{0,180}?'+B+'а\\s+потому\\s+что'+E, 'gisu');
+function checkBecause(ctx) {
+  return regexCheck(ctx.text, RE_BECAUSE, 'Не потому что…, а потому что…', 'high',
+    'Пункт 6: объяснительная связка, шаблонна при повторе.', 14);
+}
+
+// П7 — зеркальные предложения (кастом)
+function checkMirror(ctx) {
+  const { sentences, positions } = ctx;
+  const hl = [];
+  for (let i=0; i<sentences.length-1 && i<positions.length-1; i++) {
+    const a = sigWords(sentences[i]), b = sigWords(sentences[i+1]);
+    if (a.size<2 || b.size<2) continue;
+    const common = new Set([...a].filter(w=>b.has(w)));
+    if (common.size>=2 && sentences[i].length<90 && sentences[i+1].length<90)
+      hl.push({start:positions[i][0],end:positions[i+1][1],type:'Зеркальная пара предложений',sev:'medium'});
+  }
+  if (!hl.length) return null;
+  return { highlights:hl, flags:[{type:'Зеркальные предложения',sev:'medium',count:hl.length,comment:'Пункт 7: соседние фразы с перестановкой похожих слов.'}],
+    score:hl.length*10, suggestions:[], metrics:{} };
+}
+
+// П8 — «как будто / будто / словно»
+const RE_ASIF = new RegExp(B+'(как\\s+будто|будто|словно)'+E, 'giu');
+function checkAsIf(ctx) {
+  return regexCheck(ctx.text, RE_ASIF, 'Как будто / будто / словно', 'medium',
+    'Пункт 8: сравнения через «будто/словно».', 6);
+}
+
+// П9 — повтор начала предложений (кастом)
+function checkRepeatedStart(ctx) {
+  const { sentences, positions } = ctx;
+  const hl = []; let prev='', prevStart=-1;
+  for (let i=0; i<sentences.length && i<positions.length; i++) {
+    const fw = firstWord(sentences[i]).toLowerCase();
+    if (!fw) continue;
+    if (fw===prev) hl.push({start:prevStart>=0?prevStart:positions[i][0],end:positions[i][1],type:`Повтор начала: «${fw}»`,sev:'low'});
+    prev=fw; prevStart=positions[i][0];
+  }
+  if (!hl.length) return null;
+  const sev = hl.length>=2?'medium':'low';
+  const colored = hl.map(h=>({...h,sev}));
+  return { highlights:colored, flags:[{type:'Повтор начала предложений',sev,count:hl.length,comment:'Пункт 9: соседние предложения начинаются одинаково.'}],
+    score:hl.length*6, suggestions:[], metrics:{} };
+}
+
+// П11 — два прилагательных (кастом с проверкой предлога)
+const RE_TWO_ADJ = new RegExp('[а-яё]+'+ADJ_END+'\\b\\s*,\\s*[а-яё]+'+ADJ_END+'\\b\\s+[а-яё]{3,}\\b', 'giu');
+const PREPS = new Set(['в','во','за','на','по','к','от','до','из','со','при','без','под','над','про','для','у','с','о','об','обо','перед','между','через','около','после','вместо','кроме']);
+function checkTwoAdj(ctx) {
+  const hl = [];
+  for (const m of ctx.text.matchAll(RE_TWO_ADJ)) {
+    // проверяем предлог перед первым словом
+    let i = m.index-1;
+    while (i>=0 && ctx.text[i]===' ') i--;
+    let wordEnd=i+1, wordStart=i;
+    while (wordStart>0 && /[\p{L}]/u.test(ctx.text[wordStart-1])) wordStart--;
+    if (wordStart<wordEnd) {
+      const word = ctx.text.slice(wordStart,wordEnd).toLowerCase();
+      if (PREPS.has(word)) continue;
+    }
+    hl.push({start:m.index,end:m.index+m[0].length,type:'Два определения перед существительным',sev:'medium'});
+  }
+  if (!hl.length) return null;
+  const sev = hl.length>=3?'high':'medium';
+  const colored = hl.map(h=>({...h,sev}));
+  return { highlights:colored, flags:[{type:'Переизбыток определений',sev,count:hl.length,comment:'Пункт 11: два определения через запятую.'}],
+    score:hl.length*9, suggestions:[], metrics:{} };
+}
+
+// П12 — тире вне диалога (кастом)
+function isDialogueDash(text, idx) {
+  let i=idx-1;
+  while (i>=0 && text[i]===' ') i--;
+  if (i<0) return true;
+  const prev=text[i];
+  if (prev==='\n'||prev==='\r') return true;
+  if (['?','!','.',',','»'].includes(prev)) {
+    // проверяем, начинается ли строка с —
+    let lineStart=idx;
+    while (lineStart>0 && text[lineStart-1]!=='\n' && text[lineStart-1]!=='\r') lineStart--;
+    while (lineStart<idx && text[lineStart]===' ') lineStart++;
+    return lineStart<text.length && text[lineStart]==='—';
+  }
+  return false;
+}
+function checkDash(ctx) {
+  const ranges = [];
+  for (let i=0; i<ctx.text.length; i++) {
+    if (ctx.text[i]==='—' && !isDialogueDash(ctx.text,i)) ranges.push(i);
+  }
+  if (ranges.length<4) return null;
+  const sev = ranges.length>=8?'high':'medium';
+  return {
+    highlights: ranges.map(i=>({start:i,end:i+1,type:'Интонационное тире',sev})),
+    flags:[{type:'Интонационные тире',sev,count:ranges.length,comment:'Пункт 12: частые тире в авторской речи.'}],
+    score:ranges.length*6, suggestions:['Проверьте тире в авторской речи: часть можно заменить запятой.'], metrics:{}
+  };
+}
+
+// П14 — гипербола
+const RE_HYPER = new RegExp(B+'(оглушающ\\w+|всепоглощающ\\w+|первобытн\\w+|судьбоносн\\w+|единственно\\s+возможн\\w+|абсолютно\\s+м[её]ртв\\w+|переломн\\w+)'+E, 'giu');
+function checkHyperbole(ctx) {
+  return regexCheck(ctx.text, RE_HYPER, 'Гиперболическое усиление', 'medium',
+    'Пункт 14: громкое усиление.', 7);
+}
+
+// П15 — «не просто… а…» (без пересечения предложений)
+const RE_NOTJUST = new RegExp(B+'не\\s+просто'+E+'[^.!?…]{0,160}?'+B+'а'+E, 'gisu');
+function checkNotJust(ctx) {
+  return regexCheck(ctx.text, RE_NOTJUST, 'Не просто…, а…', 'high',
+    'Пункт 15: конструкция «не просто…, а…».', 14);
+}
+
+// П16 — абзац-крючок (кастом)
+const RE_HOOK = /(^|\r?\n)\s*([А-ЯЁA-Z][а-яёa-z]{2,15})\./gu;
+const SECTION_TITLES = new Set(['пролог','эпилог','предисловие','послесловие','введение','заключение','приложение','содержание','глава','часть','раздел','примечание','продолжение']);
+function checkHook(ctx) {
+  const hl = [];
+  for (const m of ctx.text.matchAll(RE_HOOK)) {
+    if (SECTION_TITLES.has(m[2].toLowerCase())) continue;
+    const start = m.index + m[1].length;
+    hl.push({start,end:m.index+m[0].length,type:'Абзац-крючок',sev:'medium'});
+  }
+  if (!hl.length) return null;
+  return { highlights:hl, flags:[{type:'Абзац-крючок',sev:'medium',count:hl.length,comment:'Пункт 16: абзац начинается одиночным словом.'}],
+    score:hl.length*8, suggestions:[], metrics:{} };
+}
+
+// П17 — жирный текст
+const RE_BOLD = /(\*\*[^*]+\*\*|<b>.*?<\/b>|<strong>.*?<\/strong>)/gisu;
+function checkBold(ctx) {
+  return regexCheck(ctx.text, RE_BOLD, 'Жирное выделение', 'medium',
+    'Пункт 17: выделение жирным внутри художественного текста.', 10);
+}
+
+// П18 — запах
+const RE_SMELL = new RegExp(B+'(воняло|в\\s+нос\\s+ударил|потянуло\\s+[^.]{0,80}?(сыростью|земл[её]й|плесенью|аптекой|бинтами|дымом|навозом))'+E, 'gisu');
+function checkSmell(ctx) {
+  return regexCheck(ctx.text, RE_SMELL, 'Сенсорный чекбокс: запах', 'medium',
+    'Пункт 18: сенсорное описание через запах.', 5);
+}
+
+// П19 — пафосное сравнение
+const RE_POMPOUS = new RegExp(B+'как\\s+(гвоздь|кость|язык|слизняк|глаз|колодец|труп|могила|ржавый\\s+гвоздь|нож|рана|клякса|монета|водяной\\s+дымке)'+E, 'giu');
+function checkPompous(ctx) {
+  return regexCheck(ctx.text, RE_POMPOUS, 'Пафосные сравнения', 'medium',
+    'Пункт 19: сильная мрачная образность.', 8);
+}
+
+// П20 — «нечто большее, чем»
+const RE_MORETHAN = new RegExp(B+'нечто\\s+большее\\s*,?\\s+чем'+E, 'giu');
+function checkMoreThan(ctx) {
+  return regexCheck(ctx.text, RE_MORETHAN, 'Нечто большее, чем…', 'high',
+    'Пункт 20: шаблон «нечто большее, чем…».', 15);
+}
+
+// S1 — монотонный ритм (кастом, без диалога)
+function checkRhythm(ctx) {
+  const nonDial = ctx.sentences
+    .map((s,i)=>!s.startsWith('—')?ctx.sentenceLengths[i]:null)
+    .filter(v=>v!==null);
+  if (nonDial.length<4) return null;
+  const avg = nonDial.reduce((a,b)=>a+b,0)/nonDial.length;
+  const sd = stdDev(nonDial);
+  const coeff = avg===0?0:sd/avg;
+  let score = 100-(coeff*180);
+  if (sd<2.0) score+=24; else if (sd<3.0) score+=12;
+  const metric = clamp(Math.round(score),0,100);
+  const res = { highlights:[], flags:[], suggestions:[], score:0, metrics:{rhythmMonotony:metric} };
+  if (sd<3.0) {
+    res.highlights=[{start:0,end:ctx.text.length,type:'Одинаковая длина фраз',sev:'medium'}];
+    res.flags=[{type:'Монотонный ритм предложений',sev:'medium',count:1,comment:'Предложения в чанке близки по длине.'}];
+    res.suggestions=['Сломайте ритм: объедините пару соседних предложений или оставьте одно очень короткое.'];
+    res.score=12;
+  }
+  return res;
+}
+
+// S2 — общая оценочная лексика (кастом)
+const GENERIC_WORDS = new Set(['странный','странная','странное','странные','странно','красивый','красивая','красивое','красивые','приятный','приятная','приятное','обычный','обычная','обычное','обычные','ужасный','ужасная','ужасное','тяжёлый','тяжёлая','тяжёлое','тяжёлые','тёмный','тёмная','тёмное','тёмные','страшный','страшная','страшное','необычный','необычная','необычное','важный','важная','важное','хороший','хорошая','хорошее','плохой','плохая','плохое','сильный','сильная','сильное']);
+function checkGenericWords(ctx) {
+  const hl = [];
+  for (const m of ctx.text.matchAll(/[\p{L}\p{N}]+/gu)) {
+    if (GENERIC_WORDS.has(m[0].toLowerCase()))
+      hl.push({start:m.index,end:m.index+m[0].length,type:'Общее оценочное слово',sev:'low'});
+  }
+  if (hl.length<5) return null;
+  const sev = hl.length>=9?'medium':'low';
+  const colored = hl.map(h=>({...h,sev}));
+  const score = Math.min(18, hl.length*2);
+  return { highlights:colored, flags:[{type:'Общая оценочная лексика',sev,count:hl.length,comment:'Много общих оценочных слов.'}],
+    score, suggestions:['Замените часть общих слов на конкретные признаки.'], metrics:{} };
+}
+
+// S3 — предсказуемость лексики (кастом)
+const COMMON_LEX = new Set(['и','в','во','не','на','он','она','они','а','но','что','как','к','с','по','из','у','за','для','это','его','её','их','был','была','были','есть','же','там','тут','всё','все','или','то','от','до','потом','сначала']);
+const ABSTRACT_EMO = new Set(['страх','тревога','боль','пустота','отчаяние','надежда','радость','злость','обида','паника','ужас','сомнение','счастье','одиночество','вина','стыд']);
+const PERCEPT = new Set(['понял','поняла','почувствовал','почувствовала','увидел','увидела','заметил','заметила','услышал','услышала','подумал','подумала','вспомнил','вспомнила','показалось','казалось']);
+const CONNECTORS = new Set(['словно','будто','вдруг','неожиданно','почему-то','почти','очень','просто','медленно','тихо','быстро']);
+function checkLexical(ctx) {
+  const words = [...ctx.text.toLowerCase().matchAll(/[\p{L}\p{N}]+/gu)].map(m=>m[0]);
+  const total = words.length;
+  if (!total) return { highlights:[], flags:[], suggestions:[], score:0, metrics:{lexicalPredictability:0} };
+  let common=0,short=0,long=0,abst=0,perc=0,conn=0;
+  const uniq = new Set();
+  for (const w of words) {
+    uniq.add(w);
+    if (COMMON_LEX.has(w)) common++;
+    if (w.length<=3) short++;
+    if (w.length>=11) long++;
+    if (ABSTRACT_EMO.has(w)) abst++;
+    if (PERCEPT.has(w)) perc++;
+    if (CONNECTORS.has(w)) conn++;
+  }
+  const cR=common*100/total, sR=short*100/total, uR=uniq.size*100/total, lR=long*100/total, aR=abst*100/total, pR=perc*100/total, coR=conn*100/total;
+  const value = clamp(24+cR*0.75+sR*0.10+aR*2.0+pR*1.6+coR*1.5-uR*0.12-lR*0.30,0,100);
+  const metric = Math.round(value);
+  const res = { highlights:[], flags:[], suggestions:[], score:0, metrics:{lexicalPredictability:metric} };
+  if (value>=45) {
+    const sev = value>=58?'high':'medium';
+    res.flags=[{type:'Высокая предсказуемость лексики',sev,count:1,comment:'В чанке много частотных, абстрактных или универсальных слов.'}];
+    res.score=Math.max(0,(value-45)*0.35);
+    res.suggestions=['Проверьте, можно ли заменить часть общих слов точными деталями: предмет, жест, звук.'];
+  }
+  return res;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// КОНВЕЙЕР АНАЛИЗА
+// ══════════════════════════════════════════════════════════════════════════════
+
+const CHECKS = [checkContrast, checkShortSeries, checkTriple, checkAphorism, checkEmotionLabel, checkBecause, checkMirror, checkAsIf, checkRepeatedStart, checkTwoAdj, checkDash, checkHyperbole, checkNotJust, checkHook, checkBold, checkSmell, checkPompous, checkMoreThan, checkRhythm, checkGenericWords, checkLexical];
+
+function analyzeChunk(index, text) {
+  const { sentences, positions } = parseSentences(text);
+  const sentenceLengths = sentences.map(wc);
+  const avg = sentenceLengths.length ? sentenceLengths.reduce((a,b)=>a+b,0)/sentenceLengths.length : 0;
+  const sd = stdDev(sentenceLengths);
+  const ctx = { text, sentences, positions, sentenceLengths };
+
+  let allFlags=[], allHL=[], allSugg=[], score=0, lexical=0, rhythmMonotony=0;
+
+  for (const check of CHECKS) {
+    const r = check(ctx);
+    if (!r) continue;
+    allFlags.push(...r.flags);
+    allHL.push(...(r.highlights||[]));
+    allSugg.push(...(r.suggestions||[]));
+    score += r.score;
+    if (r.metrics?.lexicalPredictability) lexical = Math.max(lexical, r.metrics.lexicalPredictability);
+    if (r.metrics?.rhythmMonotony) rhythmMonotony = r.metrics.rhythmMonotony;
+  }
+
+  // rhythmMonotony из отдельной формулы если не выставлен check'ом
+  if (!rhythmMonotony && sentenceLengths.length>=3) {
+    const coeff = avg===0?0:sd/avg;
+    let rs = 100-(coeff*180);
+    if (sd<2.0) rs+=24; else if (sd<3.0) rs+=12;
+    rhythmMonotony = clamp(Math.round(rs),0,100);
+  }
+
+  const finalScore = clamp(Math.round(score),0,100);
+  const uniqueSugg = [...new Set(allSugg)];
+  if (!uniqueSugg.length) uniqueSugg.push('Сильных формальных проблем не найдено.');
+
+  return {
+    index, text, chars:text.length, sentenceCount:sentences.length,
+    avgSentenceLength:Math.round(avg), sentenceLengthStd:Math.round(sd),
+    lexicalPredictability:lexical, rhythmMonotony,
+    riskScore:finalScore, label:labelFor(finalScore),
+    flags:allFlags, highlights:mergeHL(allHL).map(h=>({...h, severity:h.sev})), suggestions:uniqueSugg
+  };
+}
+
+function buildStats(chunks) {
+  const map = new Map();
+  for (const chunk of chunks) {
+    const seen = new Set();
+    for (const f of chunk.flags) {
+      const key = f.type;
+      if (!map.has(key)) map.set(key,[0,0]);
+      map.get(key)[1]+=f.count;
+      if (seen.add(key)) map.get(key)[0]++;
+    }
+  }
+  return [...map.entries()]
+    .map(([type,[chunks,totalCount]])=>({type,chunks,totalCount}))
+    .sort((a,b)=>b.totalCount-a.totalCount).slice(0,12);
+}
+
+function analyzeText(text) {
+  const chunkTexts = splitChunks(text);
+  const chunks = chunkTexts.map((t,i)=>analyzeChunk(i,t));
+  const n = chunks.length||1;
+  let sumRisk=0,sumLen=0,sumStd=0,suspicious=0,strong=0;
+  for (const c of chunks) {
+    sumRisk+=c.riskScore; sumLen+=c.avgSentenceLength; sumStd+=c.sentenceLengthStd;
+    if (c.riskScore>=35) suspicious++;
+    if (c.riskScore>=60) strong++;
+  }
+  const avgRisk = Math.round(sumRisk/n);
+  const label = avgRisk<30?'низкая сглаженность':avgRisk<60?'умеренная сглаженность':'высокая сглаженность';
+  const verdict = avgRisk<30
+    ?'Формально текст выглядит достаточно живым. Единичные подсветки стоит проверять только по уместности.'
+    :avgRisk<60
+    ?'Есть зоны сглаженности и совпадения с чек-листом паттерна. Это не доказательство ИИ, а список мест для ручной редактуры.'
+    :'Много формально сглаженных зон. Стоит проверить повторяющиеся приёмы, ритм и шаблонные связки.';
+  return {
+    smoothnessIndex:avgRisk, smoothnessLabel:label, verdict,
+    summary:{ chunkCount:n, suspiciousChunks:suspicious, strongSuspiciousChunks:strong,
+      averageRisk:avgRisk, averageSentenceLength:Math.round(sumLen/n), averageSentenceStd:Math.round(sumStd/n),
+      commonProblems:buildStats(chunks) },
+    chunks
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UI
+// ══════════════════════════════════════════════════════════════════════════════
 
 let s = { text:'', result:null, loading:false, activeChunk:null, isStale:false };
 
-// ── helpers ───────────────────────────────────────────────────────────────────
-
-function esc(v) {
-  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
+function esc(v) { return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function words(t) { return t.trim().split(/\s+/).filter(Boolean).length; }
-
 function rc(score) { return score>=60?'high':score>=30?'medium':'low'; }
-
-function chunkSuffix(n) { return n%10===1&&n%100!==11?'е':'ах'; }
+function chunkSfx(n) { return n%10===1&&n%100!==11?'е':'ах'; }
 
 function explain(chunk) {
   if (chunk.riskScore===0) return 'Паттернов не найдено — балл нулевой.';
   const parts=[], flags=chunk.flags||[];
-  const hi=flags.filter(f=>f.severity==='high'), me=flags.filter(f=>f.severity==='medium'), lo=flags.filter(f=>f.severity==='low');
+  const hi=flags.filter(f=>f.sev==='high'||f.severity==='high');
+  const me=flags.filter(f=>f.sev==='medium'||f.severity==='medium');
+  const lo=flags.filter(f=>f.sev==='low'||f.severity==='low');
   if(hi.length) parts.push('сильные паттерны: '+hi.map(f=>f.type).join(', '));
   if(me.length) parts.push('умеренные паттерны: '+me.map(f=>f.type).join(', '));
   if(lo.length) parts.push('слабые паттерны: '+lo.map(f=>f.type).join(', '));
@@ -210,183 +680,95 @@ function explain(chunk) {
   return parts.length?'Из чего складывается балл: '+parts.join('; ')+'.':'Незначительные отклонения по метрикам.';
 }
 
-function highlightedText(chunk) {
+function hlText(chunk) {
   const hl=(chunk.highlights||[]).filter(h=>h.start>=0&&h.end>h.start).sort((a,b)=>a.start-b.start);
   if(!hl.length) return esc(chunk.text);
-  let html='', cur=0;
+  let html='',cur=0;
   for(const h of hl){
     if(h.start<cur) continue;
     if(h.start>cur) html+=esc(chunk.text.slice(cur,h.start));
-    html+=`<mark class="highlight ${h.severity||'medium'}" title="${esc(h.type)}">${esc(chunk.text.slice(h.start,h.end))}</mark>`;
+    const sv=h.severity||h.sev||'medium';
+    html+=`<mark class="highlight ${sv}" title="${esc(h.type)}">${esc(chunk.text.slice(h.start,h.end))}</mark>`;
     cur=h.end;
   }
   if(cur<chunk.text.length) html+=esc(chunk.text.slice(cur));
   return html;
 }
 
-// ── rendering ─────────────────────────────────────────────────────────────────
-
-function meter(label, value, tooltip) {
+function meter(label,value,tip) {
   const v=isFinite(+value)?Math.max(0,Math.min(100,+value)):0;
-  const hint=tooltip?`<abbr class="meterHint" title="${esc(tooltip)}">?</abbr>`:'';
+  const hint=tip?`<abbr class="meterHint" title="${esc(tip)}">?</abbr>`:'';
   return `<div class="meter"><div class="meterTop"><span>${esc(label)}${hint}</span><b>${v}/100</b></div><div class="meterBar"><div style="width:${v}%"></div></div></div>`;
 }
 
-function chunkDetail(chunk) {
+function chunkDetailHtml(chunk) {
   const flags=chunk.flags||[], sugg=chunk.suggestions||[];
+  const sev=f=>f.sev||f.severity||'medium';
+  const flagBg=sv=>sv==='high'?'background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45)':sv==='medium'?'background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.45)':'background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.45)';
   const flagsHtml=flags.length
-    ?`<div class="flags">${flags.map(f=>{
-      const bg=f.severity==='high'?'background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45)'
-        :f.severity==='medium'?'background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.45)'
-        :'background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.45)';
-      return `<div class="flag" style="${bg};border-radius:16px;padding:12px;color:#111827"><div><b>${esc(f.type)}</b><span>${f.count} найдено</span></div><p>${esc(f.comment)}</p></div>`;
-    }).join('')}</div>`
+    ?`<div class="flags">${flags.map(f=>`<div class="flag" style="${flagBg(sev(f))};border-radius:16px;padding:12px;color:#111827"><div><b>${esc(f.type)}</b><span>${f.count} найдено</span></div><p>${esc(f.comment)}</p></div>`).join('')}</div>`
     :'<div class="clean">Сильных формальных флагов нет.</div>';
-
   const suggHtml=sugg.length?`<div class="suggestions"><h3>Что можно проверить</h3><ul>${sugg.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:'';
-
-  return `<article class="chunk">
-    <header class="chunkHeader">
-      <div>
-        <h3 style="margin:0">Чанк #${chunk.index+1}</h3>
-        <p class="meta">${chunk.chars} симв. · ${chunk.sentenceCount} предл. · средняя длина ${chunk.avgSentenceLength} · разброс ${chunk.sentenceLengthStd}</p>
-      </div>
-      <div class="riskBadge ${rc(chunk.riskScore)}"><small>индекс чанка</small><br><b>${chunk.riskScore}/100</b></div>
-    </header>
-    <p class="chunkExplanation">${esc(explain(chunk))}</p>
-    <div class="meters">
-      ${meter('Ожидаемость лексики',chunk.lexicalPredictability,'Доля частотных, абстрактных и взаимозаменяемых слов. ИИ тяготеет к «страху», «тревоге», «вдруг» вместо конкретных деталей. Чем выше балл — тем более шаблонная лексика.')}
-      ${meter('Монотонность ритма',chunk.rhythmMonotony,'Насколько ровны предложения по длине. ИИ генерирует предложения одинакового размера; живой автор неосознанно чередует короткие и длинные. Чем выше балл — тем ровнее ритм.')}
-    </div>
-    ${flagsHtml}${suggHtml}
-    <div class="textBlock">${highlightedText(chunk)}</div>
-  </article>`;
+  return `<article class="chunk"><header class="chunkHeader"><div><h3 style="margin:0">Чанк #${chunk.index+1}</h3><p class="meta">${chunk.chars} симв. · ${chunk.sentenceCount} предл. · средняя длина ${chunk.avgSentenceLength} · разброс ${chunk.sentenceLengthStd}</p></div><div class="riskBadge ${rc(chunk.riskScore)}"><small>индекс чанка</small><br><b>${chunk.riskScore}/100</b></div></header><p class="chunkExplanation">${esc(explain(chunk))}</p><div class="meters">${meter('Ожидаемость лексики',chunk.lexicalPredictability,'Доля частотных, абстрактных и взаимозаменяемых слов.')}${meter('Монотонность ритма',chunk.rhythmMonotony,'Насколько ровны предложения по длине.')}</div>${flagsHtml}${suggHtml}<div class="textBlock">${hlText(chunk)}</div></article>`;
 }
 
 function summaryHtml(result) {
   const probs=(result.summary?.commonProblems||[]).filter(p=>p.totalCount>0);
   const maxC=probs[0]?.totalCount||1;
-  const probHtml=probs.length?`<div class="commonProblems">
-    <p class="commonProblemsTitle">Частые паттерны</p>
-    <ul class="problemList">${probs.map(p=>`<li class="problemItem">
-      <div class="problemBar" style="width:${Math.round(p.totalCount/maxC*100)}%"></div>
-      <span class="problemName">${esc(p.type)}</span>
-      <span class="problemMeta"><b>${p.totalCount}×</b><span>в ${p.chunks} чанк${chunkSuffix(p.chunks)}</span></span>
-    </li>`).join('')}</ul></div>`:'';
+  const probHtml=probs.length?`<div class="commonProblems"><p class="commonProblemsTitle">Частые паттерны</p><ul class="problemList">${probs.map(p=>`<li class="problemItem"><div class="problemBar" style="width:${Math.round(p.totalCount/maxC*100)}%"></div><span class="problemName">${esc(p.type)}</span><span class="problemMeta"><b>${p.totalCount}×</b><span>в ${p.chunks} чанк${chunkSfx(p.chunks)}</span></span></li>`).join('')}</ul></div>`:'';
   const stale=s.isStale?'<p class="staleNotice">Текст изменён — результаты могут быть устаревшими.</p>':'';
   return `<section class="summaryBox${s.isStale?' stale':''}">
     ${stale}<h2>${esc(result.smoothnessLabel)}</h2>
     <p class="summaryVerdict">${esc(result.verdict)}</p>
-    <p class="summaryNote">Индекс отражает сглаженность текста, а не «силу ошибки».</p>
-    ${probHtml}
-  </section>`;
+    <p class="summaryNote">Индекс отражает сглаженность текста, а не «силу ошибки».</p>${probHtml}</section>`;
 }
 
-function skeletonHtml() {
-  return `<div class="skeletonWrap">
-    <div class="skeletonBox skeletonSummary"></div>
-    <div class="skeletonLayout">
-      <div class="skeletonSidebar">${'<div class="skeletonChunkBtn"></div>'.repeat(5)}</div>
-      <div class="skeletonMain">
-        <div class="skeletonLine wide"></div>
-        <div class="skeletonLine medium"></div>
-        <div class="skeletonLine short"></div>
-        <div class="skeletonBlock"></div>
-      </div>
-    </div>
-  </div>`;
+function skeleton() {
+  return `<div class="skeletonWrap"><div class="skeletonBox skeletonSummary"></div><div class="skeletonLayout"><div class="skeletonSidebar">${'<div class="skeletonChunkBtn"></div>'.repeat(5)}</div><div class="skeletonMain"><div class="skeletonLine wide"></div><div class="skeletonLine medium"></div><div class="skeletonLine short"></div><div class="skeletonBlock"></div></div></div></div>`;
 }
 
 function render() {
-  const charCount=s.text.length, wc=words(s.text);
-  const tooLong=charCount>MAX_CHARS, tooShort=wc<MIN_WORDS;
-
+  const charCount=s.text.length, wcount=words(s.text);
+  const tooLong=charCount>MAX_CHARS, tooShort=wcount<MIN_WORDS;
   document.getElementById('analyzeBtn').disabled=s.loading||tooShort||tooLong;
-  document.getElementById('analyzeBtn').textContent=s.loading?'Проверяю...':'Проверить';
+  document.getElementById('analyzeBtn').textContent=s.loading?'Анализирую...':'Проверить';
   document.getElementById('clearBtn').style.display=s.text?'':'none';
-
   const counter=document.getElementById('counterEl');
-  if(tooLong){ counter.style.display=''; counter.className='wordCount error'; counter.textContent=charCount.toLocaleString('ru')+' / 200 000 симв.'; }
-  else if(tooShort&&wc>0){ counter.style.display=''; counter.className='wordCount'; counter.textContent=wc+' / 50 слов'; }
+  if(tooLong){counter.style.display='';counter.className='wordCount error';counter.textContent=charCount.toLocaleString('ru')+' / 200 000 симв.';}
+  else if(tooShort&&wcount>0){counter.style.display='';counter.className='wordCount';counter.textContent=wcount+' / 50 слов';}
   else counter.style.display='none';
-
   const area=document.getElementById('dynamicArea');
-  if(s.loading){ area.innerHTML=skeletonHtml(); return; }
-
-  if(!s.result){ area.innerHTML=''; return; }
-
+  if(s.loading){area.innerHTML=skeleton();return;}
+  if(!s.result){area.innerHTML='';return;}
   const shown=s.activeChunk===null?s.result.chunks:s.result.chunks.filter(c=>c.index===s.activeChunk);
-  const sidebar=s.result.chunks.map(c=>`
-    <button class="chunkButton ${rc(c.riskScore)}${s.activeChunk===c.index?' active':''}" onclick="pick(${c.index})">
-      <span>#${c.index+1}</span>
-      <b>индекс ${c.riskScore}/100</b>
-      <small>${esc(c.label)}</small>
-    </button>`).join('');
-
-  area.innerHTML=`
-    ${summaryHtml(s.result)}
-    <section class="layout">
-      <aside class="chunkList"><h2>Чанки</h2>${sidebar}</aside>
-      <section class="chunks">${shown.map(chunkDetail).join('')}</section>
-    </section>`;
+  const sidebar=s.result.chunks.map(c=>`<button class="chunkButton ${rc(c.riskScore)}${s.activeChunk===c.index?' active':''}" onclick="pick(${c.index})"><span>#${c.index+1}</span><b>индекс ${c.riskScore}/100</b><small>${esc(c.label)}</small></button>`).join('');
+  area.innerHTML=`${summaryHtml(s.result)}<section class="layout"><aside class="chunkList"><h2>Чанки</h2>${sidebar}</aside><section class="chunks">${shown.map(chunkDetailHtml).join('')}</section></section>`;
 }
 
-// ── actions ───────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// СОБЫТИЯ
+// ══════════════════════════════════════════════════════════════════════════════
 
-function onInput() {
-  s.text=document.getElementById('textInput').value;
-  if(s.result) s.isStale=true;
-  render();
-}
+function onInput() { s.text=document.getElementById('textInput').value; if(s.result) s.isStale=true; render(); }
+function pick(idx) { s.activeChunk=s.activeChunk===idx?null:idx; render(); }
+function clearAll() { s={text:'',result:null,loading:false,activeChunk:null,isStale:false}; document.getElementById('textInput').value=''; hideError(); render(); }
+function showError(msg) { document.getElementById('errorText').textContent=msg; document.getElementById('errorBanner').style.display='flex'; }
+function hideError() { document.getElementById('errorBanner').style.display='none'; }
 
-function pick(idx) {
-  s.activeChunk=s.activeChunk===idx?null:idx;
-  render();
-}
-
-function clearAll() {
-  s={text:'',result:null,loading:false,activeChunk:null,isStale:false};
-  document.getElementById('textInput').value='';
-  hideError();
-  render();
-}
-
-function showError(msg) {
-  document.getElementById('errorText').textContent=msg;
-  document.getElementById('errorBanner').style.display='flex';
-}
-
-function hideError() {
-  document.getElementById('errorBanner').style.display='none';
-}
-
-document.getElementById('fileInput').addEventListener('change', async e=>{
-  const file=e.target.files?.[0];
-  if(!file) return;
-  e.target.value='';
-  if(file.size>600_000){ showError('Файл слишком большой. Максимум — 200 000 символов.'); return; }
-  const content=await file.text();
-  s.text=content;
-  document.getElementById('textInput').value=content;
-  if(s.result) s.isStale=true;
-  hideError();
-  render();
+document.getElementById('fileInput').addEventListener('change',async e=>{
+  const file=e.target.files?.[0]; if(!file) return; e.target.value='';
+  if(file.size>600_000){showError('Файл слишком большой. Максимум — 200 000 символов.');return;}
+  s.text=await file.text(); document.getElementById('textInput').value=s.text;
+  if(s.result) s.isStale=true; hideError(); render();
 });
 
-async function analyze() {
+async function runAnalyze() {
   if(!s.text.trim()) return;
   s.loading=true; hideError(); render();
-  try {
-    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:s.text})});
-    if(!res.ok) throw new Error('Ошибка API: '+res.status);
-    const data=await res.json();
-    if(!data||!Array.isArray(data.chunks)) throw new Error('Неожиданный ответ от сервера');
-    s.result=data; s.activeChunk=null; s.isStale=false;
-  } catch(e) {
-    showError(e.message);
-  } finally {
-    s.loading=false; render();
-  }
+  await new Promise(r=>setTimeout(r,0)); // отдать UI перед тяжёлым вычислением
+  try { s.result=analyzeText(s.text); s.activeChunk=null; s.isStale=false; }
+  catch(e) { showError('Ошибка анализа: '+e.message); }
+  finally { s.loading=false; render(); }
 }
 
 render();
