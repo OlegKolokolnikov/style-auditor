@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аудит стиля — детектор графомании</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f1ea;color:#211b16}
+.page{position:relative;width:min(1280px,calc(100% - 32px));margin:0 auto;padding:28px 0 64px}
+h1{margin:0 0 4px;display:flex;align-items:center;gap:12px;font-size:1.7rem}
+.siteLogo{position:absolute;top:16px;right:16px;width:72px;height:72px;border-radius:50%;object-fit:cover}
+@media(max-width:600px){.siteLogo{position:static;width:48px;height:48px;flex-shrink:0}h1{font-size:1.3rem}}
+.inputPanel,.chunk,.chunkList{background:#fffaf1;border:1px solid #e2d8c8;border-radius:22px;box-shadow:0 12px 36px rgba(61,45,28,.07)}
+.inputPanel{margin-top:18px;padding:18px}
+.toolbar{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+button,.fileButton{border:0;background:#211b16;color:#fff;border-radius:14px;padding:11px 14px;display:inline-flex;align-items:center;gap:8px;font-weight:700;cursor:pointer;font-size:1rem}
+button:disabled{opacity:.55;cursor:default}
+.fileButton input{display:none}
+textarea{width:100%;min-height:260px;resize:vertical;padding:18px;border:1px solid #ddcfbd;border-radius:18px;background:#fffefb;color:#211b16;font-size:16px;line-height:1.65;font-family:inherit}
+.wordCount{font-size:.85rem;color:#9ca3af;align-self:center}
+.wordCount.error{color:#ef4444;font-weight:600}
+.errorBanner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:10px 14px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:10px;font-size:.9rem;color:#b91c1c}
+.errorDismiss{background:none;border:none;color:#b91c1c;font-size:1rem;padding:0 4px;cursor:pointer;flex-shrink:0}
+.legendSpoiler{margin-top:16px;background:#fffefb;border:1px solid #e2d8c8;border-radius:18px;padding:12px 14px}
+.legendSpoiler summary{cursor:pointer;font-weight:800;color:#2b2117}
+.legendBody{padding:4px 16px 16px;display:flex;flex-direction:column;gap:20px}
+.legendSection h4{margin:0 0 8px;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
+.legendColors{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:.9rem;color:#374151}
+.legendColors mark{margin-right:6px;padding:1px 6px;border-radius:4px}
+.legendList{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;font-size:.88rem}
+.legendList dt{font-weight:600;color:#111827;white-space:nowrap}
+.legendList dd{margin:0;color:#374151}
+.legendText{margin:0;font-size:.88rem;color:#374151;line-height:1.6}
+.summaryBox{margin:20px 0;padding:16px 18px;border-radius:16px;border:1px solid rgba(148,163,184,.35);background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.summaryBox h2{margin:0 0 6px;color:#111827}
+.summaryVerdict{margin:6px 0;color:#374151}
+.summaryNote{margin-top:8px;font-size:13px;color:#64748b}
+.staleNotice{margin:0 0 8px;font-size:.82rem;color:#92400e;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:6px 10px}
+.summaryBox.stale{border-color:rgba(245,158,11,.5)}
+.commonProblems{margin-top:14px;padding-top:12px;border-top:1px solid #eadfcd}
+.commonProblemsTitle{margin:0 0 8px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af}
+.problemList{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.problemItem{position:relative;display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;overflow:hidden;font-size:.85rem}
+.problemBar{position:absolute;inset:0;background:rgba(33,27,22,.05);border-radius:8px;pointer-events:none}
+.problemName{position:relative;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151}
+.problemMeta{position:relative;display:flex;gap:6px;flex-shrink:0;font-size:.8rem;color:#9ca3af}
+.problemMeta b{color:#374151;font-weight:600}
+.layout{display:grid;grid-template-columns:260px 1fr;gap:18px;margin-top:18px;align-items:start}
+.chunkList{padding:14px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+.chunkList h2{margin:0 0 12px}
+.chunkButton{width:100%;margin-bottom:8px;justify-content:space-between;background:#fff;color:#211b16;border:1px solid #e4d7c4;display:flex;flex-direction:column;align-items:flex-start;padding:10px 12px;border-radius:14px;cursor:pointer;text-align:left}
+.chunkButton.active{outline:3px solid #2b2117}
+.chunkButton.high{border-color:#e66a6a}
+.chunkButton.medium{border-color:#d8a623}
+.chunkButton.low{border-color:#7fb585}
+.chunkButton small{display:block;color:#7b6f62;margin-top:4px}
+.chunks{display:grid;gap:18px}
+.chunk{padding:18px}
+.chunkHeader{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.meta{color:#7b6f62;margin:4px 0 0;font-size:.9rem}
+.riskBadge{min-width:76px;text-align:center;border-radius:16px;padding:12px;font-weight:800;font-size:.9rem}
+.riskBadge.high{background:#ffe1e1;color:#8f1717}
+.riskBadge.medium{background:#fff0bc;color:#7b5300}
+.riskBadge.low{background:#e5f5df;color:#2d6b2f}
+.chunkExplanation{margin:0 0 12px;font-size:.85rem;color:#6b7280;line-height:1.5}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.meter{background:#fff;border:1px solid #eadfcd;border-radius:16px;padding:12px}
+.meterTop{display:flex;justify-content:space-between;gap:12px;font-size:.9rem}
+.meterBar{height:8px;background:#eee4d5;border-radius:999px;overflow:hidden;margin-top:10px}
+.meterBar div{height:100%;background:#211b16;transition:width .3s}
+.meterHint{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;margin-left:5px;border-radius:50%;background:#c9bfb0;color:#fff;font-size:9px;font-weight:700;font-style:normal;text-decoration:none;cursor:help;vertical-align:middle}
+.flags{display:grid;gap:10px;margin:14px 0}
+.flag{border-radius:16px;padding:12px;border:1px solid}
+.flag div{display:flex;justify-content:space-between;gap:10px}
+.flag p{margin:6px 0 0;color:#6f6255}
+.clean{background:#eef8e9;border-radius:16px;padding:12px;color:#244f24}
+.suggestions{background:#fff;border:1px solid #eadfcd;border-radius:16px;padding:12px;margin:14px 0}
+.suggestions h3{margin:0 0 8px}
+.suggestions ul{margin:0;padding-left:20px;color:#6f6255}
+.textBlock{white-space:pre-wrap;line-height:1.8;font-size:17px;background:#fffefb;border:1px solid #eadfcd;border-radius:18px;padding:18px}
+.highlight{border-radius:5px;padding:1px 3px}
+.highlight.high{background:#ffb4b4;color:#581111}
+.highlight.medium{background:#ffe182;color:#4f3300}
+.highlight.low{background:#dff0d6;color:#244f24}
+.siteFooter{margin-top:40px;padding:16px 0;text-align:center;font-size:.8rem;color:#9ca3af}
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+.skeletonWrap{margin-top:20px}
+.skeletonBox,.skeletonChunkBtn,.skeletonLine,.skeletonBlock{background:linear-gradient(90deg,#e8e0d4 25%,#f0ead8 50%,#e8e0d4 75%);background-size:600px 100%;animation:shimmer 1.4s infinite linear;border-radius:10px}
+.skeletonSummary{height:90px;margin-bottom:16px}
+.skeletonLayout{display:grid;grid-template-columns:200px 1fr;gap:16px}
+.skeletonSidebar{display:flex;flex-direction:column;gap:8px}
+.skeletonChunkBtn{height:60px}
+.skeletonMain{display:flex;flex-direction:column;gap:12px}
+.skeletonLine{height:14px}
+.skeletonLine.wide{width:80%}
+.skeletonLine.medium{width:55%}
+.skeletonLine.short{width:35%}
+.skeletonBlock{height:120px}
+@media(max-width:900px){.layout,.meters{grid-template-columns:1fr}.chunkList{position:static}.skeletonLayout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page">
+
+<h1>
+  <img src="/logo.png" alt="" class="siteLogo" onerror="this.style.display='none'">
+  Аудит стиля (детектор графомании)
+</h1>
+
+<section class="inputPanel">
+  <div class="toolbar">
+    <label class="fileButton">
+      ↑ Загрузить .txt
+      <input type="file" id="fileInput" accept=".txt,text/plain">
+    </label>
+    <button id="analyzeBtn" onclick="analyze()">Проверить</button>
+    <button id="clearBtn" onclick="clearAll()" style="display:none">Очистить</button>
+    <span id="counterEl" class="wordCount" style="display:none"></span>
+  </div>
+  <div id="errorBanner" class="errorBanner" style="display:none">
+    <span id="errorText"></span>
+    <button class="errorDismiss" onclick="hideError()">✕</button>
+  </div>
+  <textarea id="textInput" placeholder="Вставьте текст или загрузите .txt..." oninput="onInput()"></textarea>
+</section>
+
+<details class="legendSpoiler">
+  <summary>Легенда</summary>
+  <div class="legendBody">
+    <section class="legendSection">
+      <h4>Индекс чанка</h4>
+      <p class="legendText">Число от 0 до 100. Складывается из штрафных баллов за каждый найденный паттерн — чем серьёзнее паттерн, тем больше очков он даёт (от 5 до 15). Метрики сглаженности (ритм, лексика) добавляют баллы сверху. Несколько паттернов на одном участке перекрываются и окрашиваются красным — это тоже усиливает счёт. Итоговый балл не суммируется по чанкам: каждый оценивается независимо.</p>
+    </section>
+    <section class="legendSection">
+      <h4>Цвета подсветки</h4>
+      <ul class="legendColors">
+        <li><mark class="highlight low">низкий</mark> — слабый сигнал, одиночный случай не критичен</li>
+        <li><mark class="highlight medium">средний</mark> — стоит обратить внимание при накоплении</li>
+        <li><mark class="highlight high">высокий</mark> — характерный паттерн, рекомендуется правка</li>
+      </ul>
+    </section>
+    <section class="legendSection">
+      <h4>Паттерны</h4>
+      <dl class="legendList">
+        <dt>Пункт 1</dt><dd>«Это не… Это…» — драматический контраст. Одиночный случай не страшен, опасно накопление.</dd>
+        <dt>Пункт 2</dt><dd>Серия коротких фраз подряд — три и более предложения длиной до 4 слов.</dd>
+        <dt>Пункт 3</dt><dd>Тройное перечисление. Нормальный приём, но при избытке заметен.</dd>
+        <dt>Пункт 4</dt><dd>Псевдоафоризм — обобщающая фраза в конце абзаца.</dd>
+        <dt>Пункт 5</dt><dd>Эмоция-ярлык — абстрактное чувство в коротком отдельном предложении.</dd>
+        <dt>Пункт 6</dt><dd>«Не потому что… а потому что…» — объяснительная связка. Шаблонна при повторе.</dd>
+        <dt>Пункт 7</dt><dd>Зеркальное предложение — соседние фразы с перестановкой похожих слов.</dd>
+        <dt>Пункт 8</dt><dd>«Как будто / словно» — сравнения. В хорроре норма, но частый повтор заметен.</dd>
+        <dt>Пункт 9</dt><dd>Повтор начала предложений — соседние предложения начинаются с одного слова.</dd>
+        <dt>Пункт 11</dt><dd>Два прилагательных перед существительным через запятую.</dd>
+        <dt>Пункт 12</dt><dd>Тире вне диалога — частые тире в авторской речи. Диалоговые тире игнорируются.</dd>
+        <dt>Пункт 14</dt><dd>Гипербола — громкое усиление. Само по себе нормально, при избытке создаёт пафос.</dd>
+        <dt>Пункт 15</dt><dd>«Не просто… а…» — усилительная конструкция. Шаблонна при накоплении.</dd>
+        <dt>Пункт 16</dt><dd>Абзац-крючок — абзац начинается одиночным словом.</dd>
+        <dt>Пункт 17</dt><dd>Жирный текст внутри художественного фрагмента.</dd>
+        <dt>Пункт 18</dt><dd>Запах — сенсорное описание через обоняние. Проблемно, если встречается в каждой сцене.</dd>
+        <dt>Пункт 19</dt><dd>Помпезное сравнение — тёмная образность. Работает дозированно.</dd>
+        <dt>Пункт 20</dt><dd>«Нечто большее, чем…» — шаблонный оборот.</dd>
+      </dl>
+    </section>
+    <section class="legendSection">
+      <h4>Метрики сглаженности</h4>
+      <dl class="legendList">
+        <dt>S1 — Монотонный ритм</dt><dd>Предложения в чанке близки по длине — стандартное отклонение длин меньше 3 слов. ИИ генерирует предложения ровными «волнами», живой автор чередует короткие и длинные. Подсвечивается весь фрагмент целиком.</dd>
+        <dt>S2 — Общая оценочная лексика</dt><dd>Много размытых прилагательных (красивый, странный, тёмный и т.п.).</dd>
+        <dt>S3 — Предсказуемость лексики</dt><dd>Высокая доля частотных, абстрактных или взаимозаменяемых слов. Человек пишет «продавленный диван с торчащей пружиной» — ИИ пишет «неудобное место».</dd>
+      </dl>
+    </section>
+  </div>
+</details>
+
+<div id="dynamicArea"></div>
+
+<footer class="siteFooter">Сайт не несёт ответственности ни за что.</footer>
+</main>
+
+<script>
+const API_URL = 'http://localhost:80/api/analyze';
+const MAX_CHARS = 200_000;
+const MIN_WORDS = 50;
+
+let s = { text:'', result:null, loading:false, activeChunk:null, isStale:false };
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function esc(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function words(t) { return t.trim().split(/\s+/).filter(Boolean).length; }
+
+function rc(score) { return score>=60?'high':score>=30?'medium':'low'; }
+
+function chunkSuffix(n) { return n%10===1&&n%100!==11?'е':'ах'; }
+
+function explain(chunk) {
+  if (chunk.riskScore===0) return 'Паттернов не найдено — балл нулевой.';
+  const parts=[], flags=chunk.flags||[];
+  const hi=flags.filter(f=>f.severity==='high'), me=flags.filter(f=>f.severity==='medium'), lo=flags.filter(f=>f.severity==='low');
+  if(hi.length) parts.push('сильные паттерны: '+hi.map(f=>f.type).join(', '));
+  if(me.length) parts.push('умеренные паттерны: '+me.map(f=>f.type).join(', '));
+  if(lo.length) parts.push('слабые паттерны: '+lo.map(f=>f.type).join(', '));
+  if(chunk.rhythmMonotony>40) parts.push('монотонный ритм ('+chunk.rhythmMonotony+'/100)');
+  if(chunk.lexicalPredictability>40) parts.push('предсказуемая лексика ('+chunk.lexicalPredictability+'/100)');
+  return parts.length?'Из чего складывается балл: '+parts.join('; ')+'.':'Незначительные отклонения по метрикам.';
+}
+
+function highlightedText(chunk) {
+  const hl=(chunk.highlights||[]).filter(h=>h.start>=0&&h.end>h.start).sort((a,b)=>a.start-b.start);
+  if(!hl.length) return esc(chunk.text);
+  let html='', cur=0;
+  for(const h of hl){
+    if(h.start<cur) continue;
+    if(h.start>cur) html+=esc(chunk.text.slice(cur,h.start));
+    html+=`<mark class="highlight ${h.severity||'medium'}" title="${esc(h.type)}">${esc(chunk.text.slice(h.start,h.end))}</mark>`;
+    cur=h.end;
+  }
+  if(cur<chunk.text.length) html+=esc(chunk.text.slice(cur));
+  return html;
+}
+
+// ── rendering ─────────────────────────────────────────────────────────────────
+
+function meter(label, value, tooltip) {
+  const v=isFinite(+value)?Math.max(0,Math.min(100,+value)):0;
+  const hint=tooltip?`<abbr class="meterHint" title="${esc(tooltip)}">?</abbr>`:'';
+  return `<div class="meter"><div class="meterTop"><span>${esc(label)}${hint}</span><b>${v}/100</b></div><div class="meterBar"><div style="width:${v}%"></div></div></div>`;
+}
+
+function chunkDetail(chunk) {
+  const flags=chunk.flags||[], sugg=chunk.suggestions||[];
+  const flagsHtml=flags.length
+    ?`<div class="flags">${flags.map(f=>{
+      const bg=f.severity==='high'?'background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45)'
+        :f.severity==='medium'?'background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.45)'
+        :'background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.45)';
+      return `<div class="flag" style="${bg};border-radius:16px;padding:12px;color:#111827"><div><b>${esc(f.type)}</b><span>${f.count} найдено</span></div><p>${esc(f.comment)}</p></div>`;
+    }).join('')}</div>`
+    :'<div class="clean">Сильных формальных флагов нет.</div>';
+
+  const suggHtml=sugg.length?`<div class="suggestions"><h3>Что можно проверить</h3><ul>${sugg.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:'';
+
+  return `<article class="chunk">
+    <header class="chunkHeader">
+      <div>
+        <h3 style="margin:0">Чанк #${chunk.index+1}</h3>
+        <p class="meta">${chunk.chars} симв. · ${chunk.sentenceCount} предл. · средняя длина ${chunk.avgSentenceLength} · разброс ${chunk.sentenceLengthStd}</p>
+      </div>
+      <div class="riskBadge ${rc(chunk.riskScore)}"><small>индекс чанка</small><br><b>${chunk.riskScore}/100</b></div>
+    </header>
+    <p class="chunkExplanation">${esc(explain(chunk))}</p>
+    <div class="meters">
+      ${meter('Ожидаемость лексики',chunk.lexicalPredictability,'Доля частотных, абстрактных и взаимозаменяемых слов. ИИ тяготеет к «страху», «тревоге», «вдруг» вместо конкретных деталей. Чем выше балл — тем более шаблонная лексика.')}
+      ${meter('Монотонность ритма',chunk.rhythmMonotony,'Насколько ровны предложения по длине. ИИ генерирует предложения одинакового размера; живой автор неосознанно чередует короткие и длинные. Чем выше балл — тем ровнее ритм.')}
+    </div>
+    ${flagsHtml}${suggHtml}
+    <div class="textBlock">${highlightedText(chunk)}</div>
+  </article>`;
+}
+
+function summaryHtml(result) {
+  const probs=(result.summary?.commonProblems||[]).filter(p=>p.totalCount>0);
+  const maxC=probs[0]?.totalCount||1;
+  const probHtml=probs.length?`<div class="commonProblems">
+    <p class="commonProblemsTitle">Частые паттерны</p>
+    <ul class="problemList">${probs.map(p=>`<li class="problemItem">
+      <div class="problemBar" style="width:${Math.round(p.totalCount/maxC*100)}%"></div>
+      <span class="problemName">${esc(p.type)}</span>
+      <span class="problemMeta"><b>${p.totalCount}×</b><span>в ${p.chunks} чанк${chunkSuffix(p.chunks)}</span></span>
+    </li>`).join('')}</ul></div>`:'';
+  const stale=s.isStale?'<p class="staleNotice">Текст изменён — результаты могут быть устаревшими.</p>':'';
+  return `<section class="summaryBox${s.isStale?' stale':''}">
+    ${stale}<h2>${esc(result.smoothnessLabel)}</h2>
+    <p class="summaryVerdict">${esc(result.verdict)}</p>
+    <p class="summaryNote">Индекс отражает сглаженность текста, а не «силу ошибки».</p>
+    ${probHtml}
+  </section>`;
+}
+
+function skeletonHtml() {
+  return `<div class="skeletonWrap">
+    <div class="skeletonBox skeletonSummary"></div>
+    <div class="skeletonLayout">
+      <div class="skeletonSidebar">${'<div class="skeletonChunkBtn"></div>'.repeat(5)}</div>
+      <div class="skeletonMain">
+        <div class="skeletonLine wide"></div>
+        <div class="skeletonLine medium"></div>
+        <div class="skeletonLine short"></div>
+        <div class="skeletonBlock"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const charCount=s.text.length, wc=words(s.text);
+  const tooLong=charCount>MAX_CHARS, tooShort=wc<MIN_WORDS;
+
+  document.getElementById('analyzeBtn').disabled=s.loading||tooShort||tooLong;
+  document.getElementById('analyzeBtn').textContent=s.loading?'Проверяю...':'Проверить';
+  document.getElementById('clearBtn').style.display=s.text?'':'none';
+
+  const counter=document.getElementById('counterEl');
+  if(tooLong){ counter.style.display=''; counter.className='wordCount error'; counter.textContent=charCount.toLocaleString('ru')+' / 200 000 симв.'; }
+  else if(tooShort&&wc>0){ counter.style.display=''; counter.className='wordCount'; counter.textContent=wc+' / 50 слов'; }
+  else counter.style.display='none';
+
+  const area=document.getElementById('dynamicArea');
+  if(s.loading){ area.innerHTML=skeletonHtml(); return; }
+
+  if(!s.result){ area.innerHTML=''; return; }
+
+  const shown=s.activeChunk===null?s.result.chunks:s.result.chunks.filter(c=>c.index===s.activeChunk);
+  const sidebar=s.result.chunks.map(c=>`
+    <button class="chunkButton ${rc(c.riskScore)}${s.activeChunk===c.index?' active':''}" onclick="pick(${c.index})">
+      <span>#${c.index+1}</span>
+      <b>индекс ${c.riskScore}/100</b>
+      <small>${esc(c.label)}</small>
+    </button>`).join('');
+
+  area.innerHTML=`
+    ${summaryHtml(s.result)}
+    <section class="layout">
+      <aside class="chunkList"><h2>Чанки</h2>${sidebar}</aside>
+      <section class="chunks">${shown.map(chunkDetail).join('')}</section>
+    </section>`;
+}
+
+// ── actions ───────────────────────────────────────────────────────────────────
+
+function onInput() {
+  s.text=document.getElementById('textInput').value;
+  if(s.result) s.isStale=true;
+  render();
+}
+
+function pick(idx) {
+  s.activeChunk=s.activeChunk===idx?null:idx;
+  render();
+}
+
+function clearAll() {
+  s={text:'',result:null,loading:false,activeChunk:null,isStale:false};
+  document.getElementById('textInput').value='';
+  hideError();
+  render();
+}
+
+function showError(msg) {
+  document.getElementById('errorText').textContent=msg;
+  document.getElementById('errorBanner').style.display='flex';
+}
+
+function hideError() {
+  document.getElementById('errorBanner').style.display='none';
+}
+
+document.getElementById('fileInput').addEventListener('change', async e=>{
+  const file=e.target.files?.[0];
+  if(!file) return;
+  e.target.value='';
+  if(file.size>600_000){ showError('Файл слишком большой. Максимум — 200 000 символов.'); return; }
+  const content=await file.text();
+  s.text=content;
+  document.getElementById('textInput').value=content;
+  if(s.result) s.isStale=true;
+  hideError();
+  render();
+});
+
+async function analyze() {
+  if(!s.text.trim()) return;
+  s.loading=true; hideError(); render();
+  try {
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:s.text})});
+    if(!res.ok) throw new Error('Ошибка API: '+res.status);
+    const data=await res.json();
+    if(!data||!Array.isArray(data.chunks)) throw new Error('Неожиданный ответ от сервера');
+    s.result=data; s.activeChunk=null; s.isStale=false;
+  } catch(e) {
+    showError(e.message);
+  } finally {
+    s.loading=false; render();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
